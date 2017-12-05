@@ -27,6 +27,9 @@ public:
 
 private:
     void initActionsConnections();
+    void imshow(const cv::Mat&, bool auto_resize = true, QImage::Format = QImage::Format_Grayscale8);
+
+
 signals:
     void readAllFromFile();
 

@@ -111,11 +111,25 @@ void MainWindow::parse() {
     // ui->textBrowser->setText(show);
 }
 
+void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format format) {
+    cv::Mat img = cv::Mat(_img);
+    if (auto_resize)
+        cv::resize(img, img, cv::Size(ui->imshow->width(), ui->imshow->height()));
+    // cv::cvtColor(img, img, CV_BGR2RGB);
+    QImage showImage((const uchar*)img.data, img.cols, img.rows, img.cols*img.channels(), format);
+    ui->imshow->setPixmap(QPixmap::fromImage(showImage));
+}
+
 void MainWindow::connect_csr()
 {
+    cv::Mat img = data_->cvtCvMat(0); // cv::imread("/home/bibei/photo.jpg");
+    std::cout << img.rows << " " << img.cols << std::endl;
+    imshow(img);
+
+    return;
     switch (socket->state()) {
     case QAbstractSocket::SocketState::UnconnectedState:
-        socket->connectToHost("10.10.100.254", 8899,QTcpSocket::ReadOnly);
+        socket->connectToHost("10.10.100.254", 8899, QTcpSocket::ReadOnly);
         break;
     case QAbstractSocket::SocketState::ConnectingState:
         QMessageBox::about(this, "Tip", "connecting...");
@@ -146,14 +160,20 @@ void MainWindow::handle_state(QAbstractSocket::SocketState _s) {
     case QAbstractSocket::SocketState::HostLookupState:  break;
     case QAbstractSocket::SocketState::ConnectingState:
         status->setText("connecting...");
+        ui->actionConnect->setEnabled(false);
+        ui->actionDisconnect->setEnabled(true);
         break;
     case QAbstractSocket::SocketState::ConnectedState:
         status->setText("connected...");
+        ui->actionConnect->setEnabled(false);
+        ui->actionDisconnect->setEnabled(true);
         break;
     case QAbstractSocket::SocketState::BoundState:     break;
     case QAbstractSocket::SocketState::ListeningState: break;
     case QAbstractSocket::SocketState::ClosingState:
         status->setText("disconnected...");
+        ui->actionConnect->setEnabled(true);
+        ui->actionDisconnect->setEnabled(false);
         break;
     default:break;
     }

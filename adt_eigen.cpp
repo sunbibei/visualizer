@@ -47,7 +47,7 @@ void AdtEigen::update(size_t _t, size_t _r, size_t _c, double _v) {
 
 cv::Mat AdtEigen::cvtCvMat(size_t _t, size_t a, size_t b, size_t r) {
     const auto& _s = data_[_t%N_times_];
-    cv::Mat img = cv::Mat::zeros(a*ROWS, b*COLS, CV_8UC1);
+    cv::Mat img = cv::Mat::zeros(b*COLS, a*ROWS, CV_8UC1);
 
     double scale = 1/(max_val_ - min_val_);
 
@@ -55,13 +55,13 @@ cv::Mat AdtEigen::cvtCvMat(size_t _t, size_t a, size_t b, size_t r) {
         for (int c = 0; c < COLS; ++c) {
            for (int ra = a*r; ra < a*r+a; ++ra) {
                for (int cb = b*c; cb < b*c+b; ++cb) {
-                   img.at<unsigned char>(ra, cb) = _s(r, c)*scale*255;
+                   img.at<unsigned char>(cb, ra) = _s(r, c)*scale*255;
                }
            }
         }
     }
 
-    cv::resize(img, img, cv::Size(r*a*ROWS, r*b*COLS));
+    // cv::resize(img, img, cv::Size(r*b*COLS, r*a*ROWS));
     return img;
 }
 
