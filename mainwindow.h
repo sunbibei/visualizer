@@ -7,12 +7,15 @@
 #include <QString>
 #include <QDataStream>
 #include <QByteArray>
+#include <mutex>
 
 #include "adt_eigen.h"
 
 namespace Ui {
 class MainWindow;
 }
+
+class SettingsDialog;
 
 class MainWindow : public QMainWindow
 {
@@ -22,22 +25,48 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private:
+    void initActionsConnections();
+signals:
+    void readAllFromFile();
+
 private slots:
-    void connected();
     void readyread();
 
-    void on_btn_connect_clicked();
-    void on_pushButton_clicked();
+    void parse();
+
+    void connect_csr();
+    void close_csr();
+
+    void about();
+
+    void handle_state(QAbstractSocket::SocketState);
 
 private:
-    void parseFromData(double, size_t&, size_t&, double&);
+    // size_t parseFromData(const char *, size_t, size_t&, size_t&, double&, bool);
 
 private:
     Ui::MainWindow *ui;
 
-    QTcpSocket* socket;
+    QTcpSocket*     socket;
+    QLabel*         status;
+    SettingsDialog* settings;
+
+
     AdtEigen*   data_;
-    std::string str_buf_;
+
+    // The buffer for read
+    std::mutex        buf_lock_;
+    const size_t      READ_BUF_SIZE;
+    char*             read_buf_;
+    char*             buf_btm_;
+    char*             buf_top_;
+    const char*       BUF_END_;
+
+    size_t            count_;
+    size_t            tmp_r_;
+    size_t            tmp_c_;
+    double            tmp_v_;
 };
 
 #endif // MAINWINDOW_H

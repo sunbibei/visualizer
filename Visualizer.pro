@@ -26,13 +26,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     adt.cpp \
-    adt_eigen.cpp
+    adt_eigen.cpp \
+    settingsdialog.cpp
 
 HEADERS  += mainwindow.h \
     adt.h \
-    adt_eigen.h
+    adt_eigen.h \
+    settingsdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    settingsdialog.ui
 
 QT += network
 
@@ -79,3 +82,6 @@ LIBS += -L/usr/lib -L/opt/ros/kinetic/lib \
 -lopencv_ml3 \
 -lopencv_features2d3
 }
+
+RESOURCES += \
+    visualizer.qrc

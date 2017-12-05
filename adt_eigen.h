@@ -15,11 +15,13 @@ class AdtEigen
 {
 public:
     AdtEigen(size_t r, size_t c);
+    ~AdtEigen();
 
     static void setPath(const std::string& _p) { s_path_ = _p; }
 
     void print(size_t t);
     void save(size_t _t);
+    void saveAll();
     bool load(size_t _t, Eigen::MatrixXd&);
 
     // for Debug
