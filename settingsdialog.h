@@ -55,6 +55,8 @@
 #include <QDialog>
 #include <QtSerialPort/QSerialPort>
 
+#include <tinyxml.h>
+
 QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
@@ -73,40 +75,42 @@ class SettingsDialog : public QDialog
 
 public:
     struct Settings {
-        QString name;
-        qint32 baudRate;
-        QString stringBaudRate;
-        QSerialPort::DataBits dataBits;
-        QString stringDataBits;
-        QSerialPort::Parity parity;
-        QString stringParity;
-        QSerialPort::StopBits stopBits;
-        QString stringStopBits;
-        QSerialPort::FlowControl flowControl;
-        QString stringFlowControl;
-        bool localEchoEnabled;
+        QString ip;
+        qint32 port;
+        size_t width;
+        size_t height;
+
+        QString data_file;
+        QString cfg_file;
     };
 
     explicit SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
 
-    Settings settings() const;
+    const Settings& settings() const {return settings_;}
 
 private slots:
-    void showPortInfo(int idx);
     void apply();
-    void checkCustomBaudRatePolicy(int idx);
-    void checkCustomDevicePathPolicy(int idx);
+
+    void on_btnDataLoad_clicked();
+
+    void on_btnCfgLoad_clicked();
 
 private:
-    void fillPortsParameters();
-    void fillPortsInfo();
-    void updateSettings();
+    void initUIs();
+    void initSettings();
+    void loadSettings();
+    void saveSettings();
+    /*!
+     * \brief updateSettings false: variables -> UI; true: UI -> variables
+     */
+    void updateSettings(bool);
 
 private:
     Ui::SettingsDialog *ui;
-    Settings currentSettings;
-    QIntValidator *intValidator;
+    Settings       settings_;
+
+    TiXmlDocument*  config_doc_;
 };
 
 #endif // SETTINGSDIALOG_H

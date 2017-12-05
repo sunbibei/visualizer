@@ -50,6 +50,7 @@ MainWindow::~MainWindow()
     delete[] read_buf_;
     BUF_END_ = read_buf_ = buf_btm_ = buf_top_ = nullptr;
     delete ui;
+    delete settings;
 }
 
 void MainWindow::readyread() {
