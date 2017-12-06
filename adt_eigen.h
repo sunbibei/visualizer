@@ -17,7 +17,7 @@ public:
     AdtEigen(size_t r, size_t c);
     ~AdtEigen();
 
-    static void setPath(const std::string& _p) { s_path_ = _p; }
+    void setFile(const std::string& _p) { out_file_ = _p; }
 
     void print(size_t t);
     void save(size_t _t);
@@ -45,7 +45,9 @@ private:
 
     TiXmlDocument*  p_xmlfd_;
 
-    static std::string s_path_;
+    std::string     out_file_;
+
+    size_t          last_times_;
 };
 
 #endif // ADT_EIGEN_H

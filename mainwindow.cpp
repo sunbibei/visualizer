@@ -6,12 +6,12 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 
-const size_t DELIMITER_SIZE = 2;
-const char DELIMITER[]      = "\r\n";
-// const char START_CHAR    = 0x02; // STX
-// const char END_CHAR      = 0x03; // ETX
-const char START_CHAR       = '*';
-const char END_CHAR         = '!';
+const size_t DELIMITER_SIZE = 1;
+const char DELIMITER     = '\n';
+const char START_CHAR    = 0x02; // STX
+const char END_CHAR      = 0x03; // ETX
+// const char START_CHAR       = '*';
+// const char END_CHAR         = '!';
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -23,12 +23,13 @@ MainWindow::MainWindow(QWidget *parent) :
     settings = new SettingsDialog;
 
     socket = new QTcpSocket(this);
-    data_  = new AdtEigen(90, 16);
+    // data_  = new AdtEigen(90, 16);
 
     ///! initialize the buffer.
     read_buf_ = new char[READ_BUF_SIZE];
     memset(read_buf_, 0x00, READ_BUF_SIZE*sizeof(char));
-    buf_btm_ = buf_top_ = read_buf_;
+    buf_top_ = read_buf_;
+    buf_btm_ = read_buf_;
     BUF_END_ = read_buf_ + READ_BUF_SIZE;
 
     count_ = tmp_r_ = tmp_c_ = 0;
@@ -53,13 +54,22 @@ MainWindow::~MainWindow()
     delete settings;
 }
 
+//void MainWindow::readyread() {
+//    buf_lock_.lock();
+//    size_t read = socket->read(buf_top_, BUF_END_ - buf_top_);
+//    if (0 == read) return;
+
+//    buf_top_ += read;
+//    buf_lock_.unlock();
+//}
+
 void MainWindow::readyread() {
-    buf_lock_.lock();
     size_t read = socket->read(buf_top_, BUF_END_ - buf_top_);
+    ui->textBrowser->append("recv: " + QString::number(read));
     if (0 == read) return;
 
     buf_top_ += read;
-    buf_lock_.unlock();
+    parse();
 }
 
 inline void __parse_value(char* _raw, size_t count, AdtEigen* data) {
@@ -72,44 +82,50 @@ inline void __parse_value(char* _raw, size_t count, AdtEigen* data) {
 }
 
 void MainWindow::parse() {
+    int size = buf_top_ - buf_btm_;
+    ui->textBrowser->append("Enter: residual -- (" + QString::number(size) + "/1024)");
+
     const int LEN   = 11;
     char* off = buf_btm_;
     while (off != buf_top_) {
-        if ((DELIMITER[0] == *off) && (DELIMITER[1] == *(off+1))) {
+        if (DELIMITER == *off) {
             if ((off - buf_btm_) != LEN) {
                 off += DELIMITER_SIZE;
                 buf_btm_ = off;
                 continue;
             }
             __parse_value(buf_btm_, count_, data_);
-            off += DELIMITER_SIZE; // eat the '\r\n'
+            off += DELIMITER_SIZE; // eat the '\n'
             buf_btm_ = off;
-            // show += QString::number(tmp_r_) + " " + QString::number(tmp_c_) + " " + QString::number(tmp_v_) + "\n";
+            // debug_str += QString::number(tmp_r_) + " " + QString::number(tmp_c_) + " " + QString::number(tmp_v_) + "\n";
+            // ui->textBrowser->setText(debug_str);
         } else if (END_CHAR == *off) {
             while ((END_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
-            if ((DELIMITER[0] == *off) && (DELIMITER[1] == *(off+1))) off += DELIMITER_SIZE;
-
-            buf_btm_ = off;
-        } else if (START_CHAR == *off) {
-            while ((START_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
-            if ((DELIMITER[0] == *off) && (DELIMITER[1] == *(off+1))) off += DELIMITER_SIZE;
+            if (DELIMITER == *off) off += DELIMITER_SIZE;
 
             buf_btm_ = off;
             ++count_;
+            ui->textBrowser->append("add " + QString::number(count_-1));
+        } else if (START_CHAR == *off) {
+            while ((START_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
+            if (DELIMITER == *off) off += DELIMITER_SIZE;
+
+            buf_btm_ = off;
         } else {
             ++off;
         }
     }
 
     if ((BUF_END_ - buf_top_) < 4*LEN) {
-        buf_lock_.lock();
+        // buf_lock_.lock();
         size_t _s = buf_top_ - buf_btm_;
         memmove(read_buf_, buf_btm_, _s);
         buf_btm_ = read_buf_;
         buf_top_ = buf_btm_ + _s;
-        buf_lock_.unlock();
+        // buf_lock_.unlock();
     }
-    // ui->textBrowser->setText(show);
+    size = buf_top_ - buf_btm_;
+    ui->textBrowser->append("Out:   parsed -- (" + QString::number(size) + "/1024)");
 }
 
 void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format format) {
@@ -123,20 +139,23 @@ void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format fo
 
 void MainWindow::connect_csr()
 {
-    cv::Mat img = data_->cvtCvMat(0); // cv::imread("/home/bibei/photo.jpg");
-    std::cout << img.rows << " " << img.cols << std::endl;
-    imshow(img);
+//    cv::Mat img = data_->cvtCvMat(0); // cv::imread("/home/bibei/photo.jpg");
+//    std::cout << img.rows << " " << img.cols << std::endl;
+//    imshow(img);
 
-    return;
+//    return;
+    auto cfg = settings->settings();
+    data_  = new AdtEigen(cfg.height, cfg.width);
+    data_->setFile(cfg.data_file.toStdString());
     switch (socket->state()) {
     case QAbstractSocket::SocketState::UnconnectedState:
-        socket->connectToHost("10.10.100.254", 8899, QTcpSocket::ReadOnly);
+        socket->connectToHost(cfg.ip, cfg.port, QTcpSocket::ReadOnly);
         break;
     case QAbstractSocket::SocketState::ConnectingState:
-        QMessageBox::about(this, "Tip", "connecting...");
+        QMessageBox::about(this, "Tip", "正在连接...");
         break;
     case QAbstractSocket::SocketState::ConnectedState:
-        QMessageBox::about(this, "Tip", "connected...");
+        QMessageBox::about(this, "Tip", "当前已经连接");
         break;
     default:break;
     }
@@ -165,9 +184,10 @@ void MainWindow::handle_state(QAbstractSocket::SocketState _s) {
         ui->actionDisconnect->setEnabled(true);
         break;
     case QAbstractSocket::SocketState::ConnectedState:
-        status->setText("connected...");
+        status->setText("connected");
         ui->actionConnect->setEnabled(false);
         ui->actionDisconnect->setEnabled(true);
+        connect(socket, SIGNAL(readyRead()), this, SLOT(readyread()));
         break;
     case QAbstractSocket::SocketState::BoundState:     break;
     case QAbstractSocket::SocketState::ListeningState: break;
@@ -191,7 +211,5 @@ void MainWindow::initActionsConnections()
     connect(ui->actionAboutQt,    &QAction::triggered, qApp,     &QApplication::aboutQt);
 
     connect(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(handle_state(QAbstractSocket::SocketState)));
-    connect(this->socket, SIGNAL(readyRead()), this, SLOT(readyread()));
-
-    connect(this, SIGNAL(readAllFromFile()), this, SLOT(readyread()));
+    // connect(this, SIGNAL(readAllFromFile()), this, SLOT(readyread()));
 }

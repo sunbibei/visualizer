@@ -5,8 +5,6 @@
 
 const unsigned int __INIT_TIMES = 16;
 
-std::string AdtEigen::s_path_ = ".";
-
 AdtEigen::AdtEigen(size_t r, size_t c)
     : ROWS(r), COLS(c), N_times_(__INIT_TIMES),
       p_xmlfd_(nullptr)
@@ -17,6 +15,8 @@ AdtEigen::AdtEigen(size_t r, size_t c)
 
     max_val_ = -100;
     min_val_ =  100;
+
+    last_times_ = N_times_;
 }
 
 AdtEigen::~AdtEigen() {
@@ -27,21 +27,23 @@ AdtEigen::~AdtEigen() {
 }
 
 void AdtEigen::update(size_t _t, size_t _r, size_t _c, double _v) {
-    if (n_times_ >= N_times_) {
-        saveAll();
-        n_times_ = 0;
-    }
-
-    static size_t last_t = _t;
+    if (N_times_ == last_times_) last_times_ = _t;
+    if (_t >= N_times_) return;
 
     auto& curr = data_[_t%N_times_];
-    curr(_r, _c) = _v;
+    curr(_r%ROWS, _c%COLS) = _v;
     if (min_val_ > _v) min_val_ = _v;
     if (max_val_ < _v) max_val_ = _v;
 
-    if (last_t != _t) {
+    if (last_times_ != _t) {
         ++n_times_;
-        last_t = _t;
+        if (n_times_ == N_times_) {
+            saveAll();
+            n_times_ = 0;
+        }
+
+        last_times_ = _t;
+        data_[n_times_].fill(0.0);
     }
 }
 
@@ -72,7 +74,7 @@ void AdtEigen::print(size_t t) {
 
 bool AdtEigen::load(size_t _t, Eigen::MatrixXd& _out) {
     auto _fd = new TiXmlDocument;
-    if (!_fd->LoadFile("/home/bibei/eigen.xml")) {
+    if (!_fd->LoadFile(out_file_)) {
         return false;
     }
 
@@ -110,7 +112,7 @@ bool AdtEigen::load(size_t _t, Eigen::MatrixXd& _out) {
 void AdtEigen::save(size_t _t) {
     if (nullptr == p_xmlfd_) {
         p_xmlfd_ = new TiXmlDocument;
-        if (!p_xmlfd_->LoadFile("/home/bibei/eigen.xml")) {
+        if (!p_xmlfd_->LoadFile(out_file_)) {
             p_xmlfd_->LinkEndChild(new TiXmlDeclaration("1.0", "UTF-8", "yes"));
             p_xmlfd_->LinkEndChild(new TiXmlElement("history"));
         }
@@ -142,7 +144,7 @@ void AdtEigen::save(size_t _t) {
 void AdtEigen::saveAll() {
     if (nullptr == p_xmlfd_) {
         p_xmlfd_ = new TiXmlDocument;
-        if (!p_xmlfd_->LoadFile("/home/bibei/eigen.xml")) {
+        if (!p_xmlfd_->LoadFile(out_file_)) {
             p_xmlfd_->LinkEndChild(new TiXmlDeclaration("1.0", "UTF-8", "yes"));
             p_xmlfd_->LinkEndChild(new TiXmlElement("history"));
         }
@@ -170,7 +172,7 @@ void AdtEigen::saveAll() {
         p_xmlfd_->RootElement()->LinkEndChild(_new);
     }
 
-    p_xmlfd_->SaveFile("/home/bibei/eigen.xml");
+    p_xmlfd_->SaveFile(out_file_);
     delete[] tmp;
 }
 
