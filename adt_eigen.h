@@ -29,6 +29,7 @@ public:
 
 // private:
     void update(size_t _t, size_t _r, size_t _c, double _v);
+    cv::Mat cvtCvMat(size_t a = 3, size_t b = 3, size_t r = 3);
     cv::Mat cvtCvMat(size_t _t, size_t a = 3, size_t b = 3, size_t r = 3);
 
 public:
@@ -37,6 +38,7 @@ public:
 
 private:
     std::vector<Eigen::MatrixXd> data_;
+    size_t          s_times_;
     size_t          n_times_;
     size_t          N_times_;
 

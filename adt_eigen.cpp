@@ -1,21 +1,26 @@
 #include "adt_eigen.h"
 #include <iostream>
+#include <QDateTime>
+
 #include <opencv/cv.hpp>
 #include <opencv2/core/eigen.hpp>
 
 const unsigned int __INIT_TIMES = 16;
 
 AdtEigen::AdtEigen(size_t r, size_t c)
-    : ROWS(r), COLS(c), N_times_(__INIT_TIMES),
-      p_xmlfd_(nullptr)
+    : ROWS(r), COLS(c), s_times_(0),
+      N_times_(__INIT_TIMES), p_xmlfd_(nullptr)
 {
     data_.resize(N_times_);
-    for (auto& mat : data_)
+    for (auto& mat : data_) {
         mat.resize(ROWS, COLS);
+        mat.fill(0.0);
+    }
 
     max_val_ = -100;
     min_val_ =  100;
 
+    n_times_    = 0;
     last_times_ = N_times_;
 }
 
@@ -28,23 +33,45 @@ AdtEigen::~AdtEigen() {
 
 void AdtEigen::update(size_t _t, size_t _r, size_t _c, double _v) {
     if (N_times_ == last_times_) last_times_ = _t;
-    if (_t >= N_times_) return;
-
-    auto& curr = data_[_t%N_times_];
-    curr(_r%ROWS, _c%COLS) = _v;
-    if (min_val_ > _v) min_val_ = _v;
-    if (max_val_ < _v) max_val_ = _v;
-
+    // if (_t >= N_times_) return;
     if (last_times_ != _t) {
         ++n_times_;
         if (n_times_ == N_times_) {
             saveAll();
+            ++s_times_;
             n_times_ = 0;
         }
 
         last_times_ = _t;
         data_[n_times_].fill(0.0);
+        //max_val_ = -100;
+        //min_val_ =  100;
     }
+
+    auto& curr = data_[n_times_];
+    curr(_r%ROWS, _c%COLS) = _v;
+    if (min_val_ > _v) min_val_ = _v;
+    if (max_val_ < _v) max_val_ = _v;
+}
+
+cv::Mat AdtEigen::cvtCvMat(size_t a, size_t b, size_t r) {
+    const auto& _s = data_[n_times_];
+    cv::Mat img = cv::Mat::zeros(a*ROWS, b*COLS, CV_8UC1);
+
+    double scale = 1/(max_val_ - min_val_);
+
+    for (size_t r = 0; r < ROWS; ++r) {
+        for (size_t c = 0; c < COLS; ++c) {
+           for (size_t ra = a*r; ra < a*r+a; ++ra) {
+               for (size_t cb = b*c; cb < b*c+b; ++cb) {
+                   img.at<unsigned char>(ra, cb) = _s(r, c)*scale*255;
+               }
+           }
+        }
+    }
+
+    // cv::resize(img, img, cv::Size(r*b*COLS, r*a*ROWS));
+    return img;
 }
 
 cv::Mat AdtEigen::cvtCvMat(size_t _t, size_t a, size_t b, size_t r) {
@@ -53,10 +80,10 @@ cv::Mat AdtEigen::cvtCvMat(size_t _t, size_t a, size_t b, size_t r) {
 
     double scale = 1/(max_val_ - min_val_);
 
-    for (int r = 0; r < ROWS; ++r) {
-        for (int c = 0; c < COLS; ++c) {
-           for (int ra = a*r; ra < a*r+a; ++ra) {
-               for (int cb = b*c; cb < b*c+b; ++cb) {
+    for (size_t r = 0; r < ROWS; ++r) {
+        for (size_t c = 0; c < COLS; ++c) {
+           for (size_t ra = a*r; ra < a*r+a; ++ra) {
+               for (size_t cb = b*c; cb < b*c+b; ++cb) {
                    img.at<unsigned char>(cb, ra) = _s(r, c)*scale*255;
                }
            }
@@ -96,7 +123,7 @@ bool AdtEigen::load(size_t _t, Eigen::MatrixXd& _out) {
     const int BUF_SIZE = 32;
     char buf[BUF_SIZE] = {0};
     for (int r = 0; r < _out.rows(); ++r) {
-        sprintf(buf, "R%02d\0", r);
+        sprintf(buf, "R%02d", r);
         auto pr = ele->FirstChildElement(buf);
         if (nullptr == pr) continue;
         std::stringstream ss;
@@ -119,9 +146,10 @@ void AdtEigen::save(size_t _t) {
     }
 
     TiXmlElement* _new = new TiXmlElement("record");
-    _new->SetAttribute("times", _t);
-    _new->SetAttribute("rows", ROWS);
-    _new->SetAttribute("cols", COLS);
+    _new->SetAttribute("timestamp", QDateTime::currentDateTime().toTime_t());
+    _new->SetAttribute("times",     _t);
+    _new->SetAttribute("rows",      ROWS);
+    _new->SetAttribute("cols",      COLS);
 
     const auto& _m = data_[_t%N_times_];
     const size_t BUF_SIZE   = 1024;
@@ -129,7 +157,7 @@ void AdtEigen::save(size_t _t) {
     char* tmp = new char[BUF_SIZE];
     memset(tmp, 0x00, BUF_SIZE*sizeof(char));
     for (int r = 0; r < _m.rows(); ++r) {
-        sprintf(tmp, "R%02d\0", r);
+        sprintf(tmp, "R%02d", r);
         TiXmlElement* _row = new TiXmlElement(tmp);
         for (int c = 0; c < _m.cols(); ++c)
             sprintf(tmp + c*VALUE_SIZE, "%01.05f ", _m(r, c));
@@ -137,7 +165,7 @@ void AdtEigen::save(size_t _t) {
         _new->LinkEndChild(_row);
     }
     p_xmlfd_->RootElement()->LinkEndChild(_new);
-    p_xmlfd_->SaveFile("/home/bibei/eigen.xml");
+    p_xmlfd_->SaveFile(out_file_);
     delete[] tmp;
 }
 
@@ -156,13 +184,14 @@ void AdtEigen::saveAll() {
     memset(tmp, 0x00, BUF_SIZE*sizeof(char));
     for (size_t i = 0; i < N_times_; ++i) {
         TiXmlElement* _new = new TiXmlElement("record");
-        _new->SetAttribute("times", i);
-        _new->SetAttribute("rows", ROWS);
-        _new->SetAttribute("cols", COLS);
+        _new->SetAttribute("timestamp", QDateTime::currentDateTime().toTime_t());
+        _new->SetAttribute("times",     s_times_*N_times_ + i);
+        _new->SetAttribute("rows",      ROWS);
+        _new->SetAttribute("cols",      COLS);
 
         const auto& _m = data_[i];
         for (int r = 0; r < _m.rows(); ++r) {
-            sprintf(tmp, "R%02d\0", r);
+            sprintf(tmp, "R%02d", r);
             TiXmlElement* _row = new TiXmlElement(tmp);
             for (int c = 0; c < _m.cols(); ++c)
                 sprintf(tmp + c*VALUE_SIZE, "%01.05f ", _m(r, c));

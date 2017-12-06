@@ -16,8 +16,8 @@ const char END_CHAR      = 0x03; // ETX
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    READ_BUF_SIZE(1024)
+    ui(new Ui::MainWindow), data_(nullptr),
+    READ_BUF_SIZE(1024*16)
 {
     ui->setupUi(this);
     settings = new SettingsDialog;
@@ -52,6 +52,7 @@ MainWindow::~MainWindow()
     BUF_END_ = read_buf_ = buf_btm_ = buf_top_ = nullptr;
     delete ui;
     delete settings;
+    if (data_) delete data_;
 }
 
 //void MainWindow::readyread() {
@@ -65,25 +66,28 @@ MainWindow::~MainWindow()
 
 void MainWindow::readyread() {
     size_t read = socket->read(buf_top_, BUF_END_ - buf_top_);
-    ui->textBrowser->append("recv: " + QString::number(read));
+    // ui->textBrowser->append("recv: " + QString::number(read));
     if (0 == read) return;
 
     buf_top_ += read;
     parse();
 }
 
-inline void __parse_value(char* _raw, size_t count, AdtEigen* data) {
-    size_t _r = (_raw[0] - '0')*10 + (_raw[1]-'0');
-    size_t _c = (_raw[2] - '0')*10 + (_raw[3]-'0');
-    double _v = (_raw[4] - '0')+ 0.1*(_raw[6]-'0')
+inline void MainWindow::__parse_value(char* _raw) {
+    tmp_r_ = (_raw[0] - '0')*10 + (_raw[1]-'0');
+    tmp_c_ = (_raw[2] - '0')*10 + (_raw[3]-'0');
+    tmp_v_ = (_raw[4] - '0')+ 0.1*(_raw[6]-'0')
             +0.01  *(_raw[7]-'0')+0.001  *(_raw[8] -'0')
             +0.0001*(_raw[9]-'0')+0.00001*(_raw[10]-'0');
-    data->update(count, _r, _c, _v);
+    if ((tmp_r_ < data_->ROWS) && (tmp_c_ < data_->COLS))
+        data_->update(count_, tmp_r_, tmp_c_, tmp_v_);
+    else
+        ;// ui->textBrowser->append("ERROR SIZE");
 }
 
 void MainWindow::parse() {
     int size = buf_top_ - buf_btm_;
-    ui->textBrowser->append("Enter: residual -- (" + QString::number(size) + "/1024)");
+    // ui->textBrowser->append("Enter: residual -- (" + QString::number(size) + "/1024)");
 
     const int LEN   = 11;
     char* off = buf_btm_;
@@ -94,7 +98,7 @@ void MainWindow::parse() {
                 buf_btm_ = off;
                 continue;
             }
-            __parse_value(buf_btm_, count_, data_);
+            __parse_value(buf_btm_);
             off += DELIMITER_SIZE; // eat the '\n'
             buf_btm_ = off;
             // debug_str += QString::number(tmp_r_) + " " + QString::number(tmp_c_) + " " + QString::number(tmp_v_) + "\n";
@@ -104,8 +108,9 @@ void MainWindow::parse() {
             if (DELIMITER == *off) off += DELIMITER_SIZE;
 
             buf_btm_ = off;
+            showData(count_);
             ++count_;
-            ui->textBrowser->append("add " + QString::number(count_-1));
+            // ui->textBrowser->append("add " + QString::number(count_-1));
         } else if (START_CHAR == *off) {
             while ((START_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
             if (DELIMITER == *off) off += DELIMITER_SIZE;
@@ -125,10 +130,16 @@ void MainWindow::parse() {
         // buf_lock_.unlock();
     }
     size = buf_top_ - buf_btm_;
-    ui->textBrowser->append("Out:   parsed -- (" + QString::number(size) + "/1024)");
+    // ui->textBrowser->append("Out:   parsed -- (" + QString::number(size) + "/1024)");
+}
+
+void MainWindow::showData(size_t) {
+    imshow(data_->cvtCvMat());
 }
 
 void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format format) {
+    //cv::imshow("test", _img);
+    //return;
     cv::Mat img = cv::Mat(_img);
     if (auto_resize)
         cv::resize(img, img, cv::Size(ui->imshow->width(), ui->imshow->height()));
@@ -164,6 +175,9 @@ void MainWindow::connect_csr()
 void MainWindow::close_csr()
 {
     socket->close();
+    status->setText("disconnected");
+    ui->actionConnect->setEnabled(true);
+    ui->actionDisconnect->setEnabled(false);
 }
 
 void MainWindow::about()
@@ -192,7 +206,7 @@ void MainWindow::handle_state(QAbstractSocket::SocketState _s) {
     case QAbstractSocket::SocketState::BoundState:     break;
     case QAbstractSocket::SocketState::ListeningState: break;
     case QAbstractSocket::SocketState::ClosingState:
-        status->setText("disconnected...");
+        status->setText("disconnected");
         ui->actionConnect->setEnabled(true);
         ui->actionDisconnect->setEnabled(false);
         break;

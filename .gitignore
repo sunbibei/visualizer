@@ -1,2 +1,4 @@
+.DS*
 *.user
 cfg.xml
+data.xml

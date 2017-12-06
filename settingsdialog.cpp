@@ -137,7 +137,7 @@ void SettingsDialog::initSettings() {
     settings_.ip   = "10.10.100.254";
     settings_.port = 8899;
     settings_.width = 16;
-    settings_.height = 89;
+    settings_.height = 88;
     settings_.data_file = QDir::currentPath() + "/data.xml";
 
     ofd.open("cfg", std::ios::in | std::ios::out);
