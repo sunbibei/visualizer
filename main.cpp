@@ -5,11 +5,14 @@
 #include "adt_eigen.h"
 
 #include <opencv/cv.hpp>
+#include <QDateTime>
 
 int main(int argc, char *argv[])
 {
-
-
+//    QDateTime current_date_time = QDateTime::currentDateTime();
+//    QString current_date = current_date_time.toString("yyyy-MM-dd.hh-mm");
+//    std::cout << current_date.toStdString() << std::endl;
+//    return 0;
 //    AdtEigen test(10, 10);
 
 //    auto& m = test.data_ref(0);

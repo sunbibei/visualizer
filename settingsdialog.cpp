@@ -56,6 +56,7 @@
 #include <QIntValidator>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QDateTime>
 #include <qdir.h>
 #include <fstream>
 
@@ -106,6 +107,8 @@ void SettingsDialog::saveSettings() {
     root->SetAttribute("ip",     settings_.ip.toStdString());
     root->SetAttribute("width",  settings_.width);
     root->SetAttribute("height", settings_.height);
+    root->SetAttribute("min_val",  settings_.min_val);
+    root->SetAttribute("max_val",  settings_.max_val);
     root->SetAttribute("data_path", settings_.data_file.toStdString());
     root->SetAttribute("cfg_path",  settings_.cfg_file.toStdString());
 
@@ -131,14 +134,18 @@ void SettingsDialog::loadSettings() {
 
     root->Attribute("width",    (int*)(&settings_.width));
     root->Attribute("height",   (int*)(&settings_.height));
+    root->Attribute("min_val",  (double*)(&settings_.min_val));
+    root->Attribute("max_val",  (double*)(&settings_.max_val));
 }
 
 void SettingsDialog::initSettings() {
-    settings_.ip   = "10.10.100.254";
-    settings_.port = 8899;
-    settings_.width = 16;
-    settings_.height = 88;
-    settings_.data_file = QDir::currentPath() + "/data.xml";
+    settings_.ip      = "10.10.100.254";
+    settings_.port    = 8899;
+    settings_.width   = 16;
+    settings_.height  = 88;
+    settings_.min_val = 0;
+    settings_.max_val = 4;
+    settings_.data_file = QDir::currentPath() + "/data_" + QString::number(QDateTime::currentDateTime().toTime_t()) + ".xml";
 
     ofd.open("cfg", std::ios::in | std::ios::out);
     std::string cfg_file;
@@ -177,6 +184,8 @@ void SettingsDialog::updateSettings(bool update)
         settings_.width  = ui->widthBox->currentText().toInt();
         settings_.data_file = ui->datapath->text();
         settings_.cfg_file  = ui->cfgpath->text();
+        settings_.min_val   = ui->minTxt->text().toDouble();
+        settings_.max_val   = ui->maxTxt->text().toDouble();
     } else {
         ui->ipText->setText(settings_.ip);
         ui->portBox->setCurrentText(QString::number(settings_.port));
@@ -184,6 +193,8 @@ void SettingsDialog::updateSettings(bool update)
         ui->widthBox->setCurrentText(QString::number(settings_.width));
         ui->datapath->setText(settings_.data_file);
         ui->cfgpath->setText(settings_.cfg_file);
+        ui->minTxt->setText(QString::number(settings_.min_val));
+        ui->maxTxt->setText(QString::number(settings_.max_val));
     }
 }
 
@@ -191,7 +202,7 @@ void SettingsDialog::on_btnDataLoad_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::currentPath(),
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    dir += "/data.xml";
+    dir += "/data_" + QString::number(QDateTime::currentDateTime().toTime_t()) + ".xml";
     ui->datapath->setText(dir);
 }
 

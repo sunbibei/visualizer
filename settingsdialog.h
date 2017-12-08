@@ -79,6 +79,8 @@ public:
         qint32 port;
         size_t width;
         size_t height;
+        double min_val;
+        double max_val;
 
         QString data_file;
         QString cfg_file;

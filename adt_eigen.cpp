@@ -17,8 +17,8 @@ AdtEigen::AdtEigen(size_t r, size_t c)
         mat.fill(0.0);
     }
 
-    max_val_ = -100;
-    min_val_ =  100;
+    max_val_ = 4;
+    min_val_ = 0;
 
     n_times_    = 0;
     last_times_ = N_times_;
@@ -44,14 +44,10 @@ void AdtEigen::update(size_t _t, size_t _r, size_t _c, double _v) {
 
         last_times_ = _t;
         data_[n_times_].fill(0.0);
-        //max_val_ = -100;
-        //min_val_ =  100;
     }
 
     auto& curr = data_[n_times_];
     curr(_r%ROWS, _c%COLS) = _v;
-    if (min_val_ > _v) min_val_ = _v;
-    if (max_val_ < _v) max_val_ = _v;
 }
 
 cv::Mat AdtEigen::cvtCvMat(size_t a, size_t b, size_t r) {

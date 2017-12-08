@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>527</width>
-    <height>396</height>
+    <height>333</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
@@ -20,50 +26,81 @@
       <string>IP Adress</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="5" column="0">
-       <widget class="QLabel" name="vidLabel">
-        <property name="text">
-         <string>Vendor ID:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="locationLabel">
-        <property name="text">
-         <string>Location:</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="serialNumberLabel">
-        <property name="text">
-         <string>Serial number:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
        <widget class="QLabel" name="manufacturerLabel">
         <property name="text">
          <string>Manufacturer:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="descriptionLabel">
+      <item row="6" column="0">
+       <widget class="QLabel" name="vidLabel">
         <property name="text">
-         <string>Description:</string>
+         <string>Vendor ID:</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="5" column="0">
+       <widget class="QLabel" name="locationLabel">
+        <property name="text">
+         <string>Location:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="serialNumberLabel">
+        <property name="text">
+         <string>Serial number:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="ipText"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="portLabel">
+          <property name="text">
+           <string>Port:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="portBox"/>
+        </item>
+       </layout>
+      </item>
+      <item row="7" column="0">
        <widget class="QLabel" name="pidLabel">
         <property name="text">
          <string>Product ID:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLineEdit" name="ipText"/>
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Min Value:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="minTxt"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Max Value:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="maxTxt"/>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -74,8 +111,18 @@
       <string>Select Parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="5" column="1">
-       <widget class="QPushButton" name="btnCfgLoad">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Data File:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="widthBox"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="btnDataLoad">
         <property name="text">
          <string>load</string>
         </property>
@@ -88,15 +135,15 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label">
+      <item row="6" column="0" colspan="2">
+       <widget class="QLineEdit" name="cfgpath"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QPushButton" name="btnCfgLoad">
         <property name="text">
-         <string>Data File:</string>
+         <string>load</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="portBox"/>
       </item>
       <item row="4" column="0" colspan="2">
        <widget class="QLineEdit" name="datapath"/>
@@ -111,32 +158,12 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="portLabel">
-        <property name="text">
-         <string>Port:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QPushButton" name="btnDataLoad">
-        <property name="text">
-         <string>load</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="widthBox"/>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="heightLabel">
         <property name="text">
          <string>Height:</string>
         </property>
        </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QLineEdit" name="cfgpath"/>
       </item>
      </layout>
     </widget>
