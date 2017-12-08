@@ -50,23 +50,40 @@ void AdtEigen::update(size_t _t, size_t _r, size_t _c, double _v) {
     curr(_r%ROWS, _c%COLS) = _v;
 }
 
-cv::Mat AdtEigen::cvtCvMat(size_t a, size_t b, size_t r) {
-    const auto& _s = data_[n_times_];
-    cv::Mat img = cv::Mat::zeros(a*ROWS, b*COLS, CV_8UC1);
-
-    double scale = 1/(max_val_ - min_val_);
-
-    for (size_t r = 0; r < ROWS; ++r) {
-        for (size_t c = 0; c < COLS; ++c) {
-           for (size_t ra = a*r; ra < a*r+a; ++ra) {
-               for (size_t cb = b*c; cb < b*c+b; ++cb) {
-                   img.at<unsigned char>(ra, cb) = _s(r, c)*scale*255;
-               }
-           }
+inline void __set_value(cv::Mat& _mat, const cv::Range& _rr, const cv::Range& _cr, uchar _val) {
+    cv::Mat part = _mat(_rr, _cr);
+    for (int r = 0; r < part.rows; ++r) {
+        uchar* pR = part.ptr(r);
+        for (int c = 0; c < part.cols; ++c) {
+            pR[c] = _val;
         }
     }
+}
 
-    // cv::resize(img, img, cv::Size(r*b*COLS, r*a*ROWS));
+cv::Mat AdtEigen::cvtCvMat(size_t a, size_t b, size_t r) {
+    const auto& _s = data_[n_times_];
+    // qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+    // auto _s = Eigen::MatrixXd(ROWS, COLS);
+//    for (int r = 0; r < ROWS; ++r) {
+//        auto data_r = _s.row(r);
+//        for (int c = 0; c < COLS; ++c) {
+//            data_r(c) = qrand()%255;
+//        }
+//    }
+    // std::cout << _s << std::endl;
+    double scale = (max_val_ == min_val_) ? 0 : 1/(max_val_ - min_val_);
+    cv::Mat img = cv::Mat::zeros(a*ROWS, b*4*COLS, CV_8UC1);
+    // return img;
+    for (int r = 0; r < ROWS; r += 2) {
+        for (int i = 0; i < 2; ++i) {
+            auto data_r = _s.row(r+i);
+            for (int c = 0; c < COLS; ++c) {
+                __set_value(img, cv::Range(a*r, 2*a+r*a),
+                            cv::Range(2*b*(i*COLS+c), 2*b*(i*COLS+c) + 2*b), data_r(c));
+            }
+        }
+    }
+    // __set_value(img, cv::Range(40, 90), cv::Range(80,90), 0xff);
     return img;
 }
 

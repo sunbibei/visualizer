@@ -150,14 +150,21 @@ void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format fo
 
 void MainWindow::connect_csr()
 {
-//    cv::Mat img = data_->cvtCvMat(0); // cv::imread("/home/bibei/photo.jpg");
-//    std::cout << img.rows << " " << img.cols << std::endl;
-//    imshow(img);
-
+//    showData(0);
+////    cv::Mat img = data_->cvtCvMat(0); // cv::imread("/home/bibei/photo.jpg");
+////    std::cout << img.rows << " " << img.cols << std::endl;
+////    imshow(img);
 //    return;
+
     auto cfg = settings->settings();
     data_  = new AdtEigen(cfg.height, cfg.width);
     data_->setFile(cfg.data_file.toStdString());
+
+    showData(0);
+//    cv::Mat img = data_->cvtCvMat(0); // cv::imread("/home/bibei/photo.jpg");
+//    std::cout << img.rows << " " << img.cols << std::endl;
+//    imshow(img);
+    return;
     switch (socket->state()) {
     case QAbstractSocket::SocketState::UnconnectedState:
         socket->connectToHost(cfg.ip, cfg.port, QTcpSocket::ReadOnly);
