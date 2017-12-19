@@ -4,12 +4,14 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+# QT       += core gui printsupport 3dcore 3drender 3dinput 3dextras
+QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Visualizer
 TEMPLATE = app
+RC_FILE  = app.rc
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -27,21 +29,37 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     adt.cpp \
     adt_eigen.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    qcustomplot.cpp \
+    scenemodifier.cpp \
+    tinyxml.cpp \
+    tinyxmlerror.cpp \
+    tinyxmlparser.cpp
 
 HEADERS  += mainwindow.h \
     adt.h \
     adt_eigen.h \
-    settingsdialog.h
+    settingsdialog.h \
+    qcustomplot.h \
+    scenemodifier.h \
+    tinyxml.h
 
 FORMS    += mainwindow.ui \
     settingsdialog.ui
 
 QT += network
 
-win32 {
+INCLUDEPATH += D:/opencv/build/include \
+    D:/opencv/build/include/opencv \
+    D:/opencv/build/include/opencv2 \
+    D:/Eigen3.3.4
 
-}
+LIBS += -LD:/opencv_mingw/lib \
+-lopencv_core2410 \
+-lopencv_highgui2410 \
+-lopencv_imgproc2410 \
+-lopencv_video2410
+
 
 macx {
 QMAKE_CXXFLAGS += -stdlib=libc++
@@ -85,3 +103,6 @@ LIBS += -L/usr/lib -L/opt/ros/kinetic/lib \
 
 RESOURCES += \
     visualizer.qrc
+
+DISTFILES += \
+    app.rc

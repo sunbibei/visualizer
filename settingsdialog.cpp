@@ -90,35 +90,38 @@ SettingsDialog::~SettingsDialog()
     }
 
     ofd.open("cfg", std::ios::out | std::ios::in | std::ios::trunc);
-    ofd << settings_.cfg_file.toStdString();
+    ofd << settings_.cfg_path.toStdString();
     ofd.close();
 }
 
 void SettingsDialog::saveSettings() {
+    std::string cfg_file = settings_.cfg_path.toStdString() + "/cfg.xml";
     if (!config_doc_) {
         config_doc_ = new TiXmlDocument;
-        if (!config_doc_->LoadFile(settings_.cfg_file.toStdString())) {
+        if (!config_doc_->LoadFile(cfg_file)) {
             config_doc_->LinkEndChild(new TiXmlDeclaration("1.0", "UTF-8", "yes"));
             config_doc_->LinkEndChild(new TiXmlElement("configures"));
         }
     }
 
     TiXmlElement* root = config_doc_->RootElement();
+    root->SetAttribute("format", (settings_.is_xml ? "xml" : "csv"));
     root->SetAttribute("ip",     settings_.ip.toStdString());
+    root->SetAttribute("port",   settings_.port);
     root->SetAttribute("width",  settings_.width);
     root->SetAttribute("height", settings_.height);
     root->SetAttribute("min_val",  settings_.min_val);
     root->SetAttribute("max_val",  settings_.max_val);
-    root->SetAttribute("data_path", settings_.data_file.toStdString());
-    root->SetAttribute("cfg_path",  settings_.cfg_file.toStdString());
+    root->SetAttribute("data_path", settings_.data_path.toStdString());
+    root->SetAttribute("cfg_path",  settings_.cfg_path.toStdString());
 
-    config_doc_->SaveFile(settings_.cfg_file.toStdString());
+    config_doc_->SaveFile(cfg_file);
 }
 
 void SettingsDialog::loadSettings() {
     if (!config_doc_) {
         config_doc_ = new TiXmlDocument;
-        if (!config_doc_->LoadFile(settings_.cfg_file.toStdString())) {
+        if (!config_doc_->LoadFile(settings_.cfg_path.toStdString())) {
             delete config_doc_;
             config_doc_ = nullptr;
             initSettings();
@@ -129,9 +132,14 @@ void SettingsDialog::loadSettings() {
     TiXmlElement* root = config_doc_->RootElement();
     settings_.ip        = QString(root->Attribute("ip"));
 
-    settings_.data_file = QString(root->Attribute("data_path"));
-    settings_.cfg_file  = QString(root->Attribute("cfg_path"));
+    settings_.data_path = QString(root->Attribute("data_path"));
+    settings_.cfg_path  = QString(root->Attribute("cfg_path"));
 
+    const char* format = root->Attribute("format");
+    if (nullptr == format) settings_.is_xml = "csv";
+    else settings_.is_xml = (0 == strcmp(format, "xml"));
+
+    root->Attribute("port",     (int*)(&settings_.port));
     root->Attribute("width",    (int*)(&settings_.width));
     root->Attribute("height",   (int*)(&settings_.height));
     root->Attribute("min_val",  (double*)(&settings_.min_val));
@@ -145,19 +153,20 @@ void SettingsDialog::initSettings() {
     settings_.height  = 88;
     settings_.min_val = 0;
     settings_.max_val = 4;
-    settings_.data_file = QDir::currentPath() + "/data_" + QString::number(QDateTime::currentDateTime().toTime_t()) + ".xml";
+    settings_.is_xml  = false;
+    settings_.data_path = QDir::currentPath();
 
     ofd.open("cfg", std::ios::in | std::ios::out);
     std::string cfg_file;
     ofd >> cfg_file;
     if (!cfg_file.empty()) {
-        settings_.cfg_file = QString::fromStdString(cfg_file);
+        settings_.cfg_path = QString::fromStdString(cfg_file);
         ofd.close();
         return;
     }
     ofd.close();
 
-    settings_.cfg_file  = QDir::currentPath() + "/cfg.xml";
+    settings_.cfg_path  = QDir::currentPath();
 }
 
 void SettingsDialog::initUIs() {
@@ -167,6 +176,9 @@ void SettingsDialog::initUIs() {
         ui->widthBox->addItem(QString::number(i));
     for (int i = 2; i <= 100; ++i)
         ui->heightBox->addItem(QString::number(i));
+
+    ui->formatBox->addItem("xml");
+    ui->formatBox->addItem("csv");
 }
 
 void SettingsDialog::apply()
@@ -182,19 +194,21 @@ void SettingsDialog::updateSettings(bool update)
         settings_.port   = ui->portBox->currentText().toInt();
         settings_.height = ui->heightBox->currentText().toInt();
         settings_.width  = ui->widthBox->currentText().toInt();
-        settings_.data_file = ui->datapath->text();
-        settings_.cfg_file  = ui->cfgpath->text();
+        settings_.data_path = ui->datapath->text();
+        settings_.cfg_path  = ui->cfgpath->text();
         settings_.min_val   = ui->minTxt->text().toDouble();
         settings_.max_val   = ui->maxTxt->text().toDouble();
+        settings_.is_xml    = (ui->formatBox->currentIndex() == 0);
     } else {
         ui->ipText->setText(settings_.ip);
         ui->portBox->setCurrentText(QString::number(settings_.port));
         ui->heightBox->setCurrentText(QString::number(settings_.height));
         ui->widthBox->setCurrentText(QString::number(settings_.width));
-        ui->datapath->setText(settings_.data_file);
-        ui->cfgpath->setText(settings_.cfg_file);
+        ui->datapath->setText(settings_.data_path);
+        ui->cfgpath->setText(settings_.cfg_path);
         ui->minTxt->setText(QString::number(settings_.min_val));
         ui->maxTxt->setText(QString::number(settings_.max_val));
+        ui->formatBox->setCurrentIndex((settings_.is_xml ? 0 : 1));
     }
 }
 
@@ -202,7 +216,7 @@ void SettingsDialog::on_btnDataLoad_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::currentPath(),
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    dir += "/data_" + QString::number(QDateTime::currentDateTime().toTime_t()) + ".xml";
+    // dir += "/DATA_" + QString::number(QDateTime::currentDateTime().toTime_t()) + ".xml";
     ui->datapath->setText(dir);
 }
 
@@ -210,6 +224,6 @@ void SettingsDialog::on_btnCfgLoad_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), QDir::currentPath(),
                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    dir += "/cfg.xml";
+    // dir += "/cfg.xml";
     ui->cfgpath->setText(dir);
 }

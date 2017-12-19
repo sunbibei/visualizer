@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>500</height>
+    <width>756</width>
+    <height>631</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,16 +16,53 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QLabel" name="imshow">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
+     <widget class="QWidget" name="widget" native="true">
+      <widget class="QLabel" name="imshow">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>311</width>
+         <height>331</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QCustomPlot" name="plotx" native="true">
+       <property name="geometry">
+        <rect>
+         <x>-1</x>
+         <y>340</y>
+         <width>741</width>
+         <height>101</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QCustomPlot" name="ploty" native="true">
+       <property name="geometry">
+        <rect>
+         <x>-1</x>
+         <y>449</y>
+         <width>741</width>
+         <height>91</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="val_view">
+       <property name="geometry">
+        <rect>
+         <x>336</x>
+         <y>10</y>
+         <width>401</width>
+         <height>321</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -35,8 +72,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>350</width>
-     <height>22</height>
+     <width>756</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -45,6 +82,9 @@
     </property>
     <addaction name="actionConnect"/>
     <addaction name="actionDisconnect"/>
+    <addaction name="actionStart"/>
+    <addaction name="actionStart_Multi"/>
+    <addaction name="actionStop"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -75,6 +115,9 @@
    </attribute>
    <addaction name="actionConnect"/>
    <addaction name="actionDisconnect"/>
+   <addaction name="actionStart"/>
+   <addaction name="actionStart_Multi"/>
+   <addaction name="actionStop"/>
    <addaction name="actionConfigure"/>
    <addaction name="actionClear"/>
   </widget>
@@ -125,6 +168,24 @@
     <string>Ctrl+D</string>
    </property>
   </action>
+  <action name="actionStart">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="visualizer.qrc">
+     <normaloff>:/images/start.png</normaloff>:/images/start.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start</string>
+   </property>
+   <property name="toolTip">
+    <string>Start to receve from CSR</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
   <action name="actionConfigure">
    <property name="icon">
     <iconset resource="visualizer.qrc">
@@ -167,8 +228,34 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
+  <action name="actionStart_Multi">
+   <property name="icon">
+    <iconset resource="visualizer.qrc">
+     <normaloff>:/images/start_mult.png</normaloff>:/images/start_mult.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start Multi</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset resource="visualizer.qrc">
+     <normaloff>:/images/stop.png</normaloff>:/images/stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="visualizer.qrc"/>
  </resources>

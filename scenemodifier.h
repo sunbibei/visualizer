@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
-** Copyright (C) 2012 Laszlo Papp <lpapp@kde.org>
+** Copyright (C) 2014 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtSerialPort module of the Qt Toolkit.
+** This file is part of the Qt3D module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -49,72 +48,44 @@
 **
 ****************************************************************************/
 
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#ifdef USE_QT_3D
 
-#include <QDialog>
-#include <QtSerialPort/QSerialPort>
+#ifndef SCENEMODIFIER_H
+#define SCENEMODIFIER_H
 
-#include <tinyxml.h>
+#include <QtCore/QObject>
 
-QT_USE_NAMESPACE
+#include <Qt3DCore/qentity.h>
+#include <Qt3DCore/qtransform.h>
 
-QT_BEGIN_NAMESPACE
+#include <Qt3DExtras/QTorusMesh>
+#include <Qt3DExtras/QConeMesh>
+#include <Qt3DExtras/QCylinderMesh>
+#include <Qt3DExtras/QCuboidMesh>
+#include <Qt3DExtras/QPlaneMesh>
+#include <Qt3DExtras/QSphereMesh>
+#include <Qt3DExtras/QPhongMaterial>
 
-namespace Ui {
-class SettingsDialog;
-}
-
-class QIntValidator;
-
-QT_END_NAMESPACE
-
-class SettingsDialog : public QDialog
+class SceneModifier : public QObject
 {
     Q_OBJECT
 
 public:
-    struct Settings {
-        QString ip;
-        qint32 port;
-        size_t width;
-        size_t height;
-        double min_val;
-        double max_val;
+    explicit SceneModifier(Qt3DCore::QEntity *rootEntity);
+    ~SceneModifier();
 
-        QString data_path;
-        QString cfg_path;
+    void change();
 
-        bool    is_xml;
-    };
-
-    explicit SettingsDialog(QWidget *parent = 0);
-    ~SettingsDialog();
-
-    const Settings& settings() const {return settings_;}
-
-private slots:
-    void apply();
-
-    void on_btnDataLoad_clicked();
-
-    void on_btnCfgLoad_clicked();
+public slots:
 
 private:
-    void initUIs();
-    void initSettings();
-    void loadSettings();
-    void saveSettings();
-    /*!
-     * \brief updateSettings false: variables -> UI; true: UI -> variables
-     */
-    void updateSettings(bool);
-
-private:
-    Ui::SettingsDialog *ui;
-    Settings       settings_;
-
-    TiXmlDocument*  config_doc_;
+    const int ROWS;
+    const int COLS;
+    Qt3DCore::QEntity *m_rootEntity;
+    Qt3DCore::QEntity *m_cylinderEntity[10][16];
+    Qt3DExtras::QCylinderMesh* m_cylinder[10][16];
 };
 
-#endif // SETTINGSDIALOG_H
+#endif // SCENEMODIFIER_H
+
+#endif

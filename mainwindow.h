@@ -10,6 +10,8 @@
 #include <mutex>
 
 #include "adt_eigen.h"
+#include "qcustomplot.h"
+#include "scenemodifier.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,6 +27,11 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+
+#ifdef USE_QT_3D
+    QWidget* getView();
+    void setmodifier(SceneModifier* ptr);
+#endif
 private:
     void initActionsConnections();
 
@@ -37,11 +44,16 @@ signals:
 
 private slots:
     void readyread();
+    void plotCenter(size_t *pc = nullptr);
 
     void parse();
 
     void connect_csr();
     void close_csr();
+    void start_stop();
+    void start_recv();
+    void start_recv_mutl();
+    void clear();
 
     void about();
 
@@ -49,15 +61,44 @@ private slots:
 
 private:
     // size_t parseFromData(const char *, size_t, size_t&, size_t&, double&, bool);
+    void initPlot();
+    void plotData(const QVector<double>& _keys, const QVector<QVector<double>>& _vals, bool is_clear=false);
 
+    void csrClosed();
+    void csrConnected();
 private:
     Ui::MainWindow *ui;
+
+    enum {
+        G_X = 0,
+        G_Y,
+        N_G,
+    };
+    QCustomPlot*    plot[N_G];
+    QCPGraph*       graphs[N_G];
+    QTimer*         plot_timer_;
+    QVector<double> keys_;
+    QVector<QVector<double>> vals_;
+
+    QString         vals_view_;
+
+    cv::Mat         img_;
+
+    bool            dis_start;
+    enum {
+        NO_CONNECT = -1,
+        SINGLE = 0,
+        CONTINUE,
+        STOP_RECV,
+        N_RECV,
+    } recv_state_;
 
     QTcpSocket*     socket;
     QLabel*         status;
     SettingsDialog* settings;
-
-
+#ifdef USE_QT_3D
+    SceneModifier *modifier;
+#endif
     AdtEigen*   data_;
 
     // The buffer for read

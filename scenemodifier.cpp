@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
-** Copyright (C) 2012 Laszlo Papp <lpapp@kde.org>
+** Copyright (C) 2014 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtSerialPort module of the Qt Toolkit.
+** This file is part of the Qt3D module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -49,72 +48,54 @@
 **
 ****************************************************************************/
 
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#include "scenemodifier.h"
 
-#include <QDialog>
-#include <QtSerialPort/QSerialPort>
+#ifdef USE_QT_3D
+#include <QtCore/QDebug>
 
-#include <tinyxml.h>
+SceneModifier::SceneModifier(Qt3DCore::QEntity *rootEntity)
+    : m_rootEntity(rootEntity), ROWS(10), COLS(16)
+{
+    for (int r = 0; r < 10; ++r) {
+        for (int c = 0; c < 16; ++c) {
+            // Cylinder shape data
+            Qt3DExtras::QCylinderMesh *cylinder = new Qt3DExtras::QCylinderMesh();
+            cylinder->setRadius(1);
+            cylinder->setLength(r);
+            cylinder->setRings(100);
+            cylinder->setSlices(20);
 
-QT_USE_NAMESPACE
+            // CylinderMesh Transform
+            Qt3DCore::QTransform *cylinderTransform = new Qt3DCore::QTransform();
+            cylinderTransform->setScale(1.0f);
+            cylinderTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1.0f, 0.0f, 0.0f), -45.0f));
+            cylinderTransform->setTranslation(QVector3D(3.0f*c, -3.0f*r, -0.0));
 
-QT_BEGIN_NAMESPACE
+            Qt3DExtras::QPhongMaterial *cylinderMaterial = new Qt3DExtras::QPhongMaterial();
+            cylinderMaterial->setDiffuse(QColor(QRgb(0x928327)));
 
-namespace Ui {
-class SettingsDialog;
+            // Cylinder
+            m_cylinderEntity[r][c] = new Qt3DCore::QEntity(m_rootEntity);
+            m_cylinderEntity[r][c]->addComponent(cylinder);
+            m_cylinderEntity[r][c]->addComponent(cylinderMaterial);
+            m_cylinderEntity[r][c]->addComponent(cylinderTransform);
+
+            m_cylinder[r][c] = cylinder;
+        }
+    }
 }
 
-class QIntValidator;
+void SceneModifier::change() {
+    //for (int r = 0; r < 10; ++r) {
+    //    for (int c = 0; c < 16; ++c) {
+            m_cylinderEntity[0][0]->removeComponent(m_cylinder[0][0]);
+            m_cylinder[0][0]->setLength(1);
+            m_cylinderEntity[0][0]->addComponent(m_cylinder[0][0]);
+      //  }
+    //}
+}
 
-QT_END_NAMESPACE
-
-class SettingsDialog : public QDialog
+SceneModifier::~SceneModifier()
 {
-    Q_OBJECT
-
-public:
-    struct Settings {
-        QString ip;
-        qint32 port;
-        size_t width;
-        size_t height;
-        double min_val;
-        double max_val;
-
-        QString data_path;
-        QString cfg_path;
-
-        bool    is_xml;
-    };
-
-    explicit SettingsDialog(QWidget *parent = 0);
-    ~SettingsDialog();
-
-    const Settings& settings() const {return settings_;}
-
-private slots:
-    void apply();
-
-    void on_btnDataLoad_clicked();
-
-    void on_btnCfgLoad_clicked();
-
-private:
-    void initUIs();
-    void initSettings();
-    void loadSettings();
-    void saveSettings();
-    /*!
-     * \brief updateSettings false: variables -> UI; true: UI -> variables
-     */
-    void updateSettings(bool);
-
-private:
-    Ui::SettingsDialog *ui;
-    Settings       settings_;
-
-    TiXmlDocument*  config_doc_;
-};
-
-#endif // SETTINGSDIALOG_H
+}
+#endif
