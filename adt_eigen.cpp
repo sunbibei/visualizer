@@ -50,7 +50,7 @@ void AdtEigen::clear() {
     last_times_ = N_times_;
 }
 
-bool AdtEigen::whole_calc(cv::Mat& img, size_t& _x, size_t& _y, size_t a, size_t b, size_t r) {
+bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, size_t a, size_t b, size_t r) {
     const auto& _s = data_[n_times_];
     // img.resize(a*ROWS, b*4*COLS);
     double scale = (max_val_ == min_val_) ? 0 : 255.0/(max_val_ - min_val_);
@@ -68,13 +68,13 @@ bool AdtEigen::whole_calc(cv::Mat& img, size_t& _x, size_t& _y, size_t a, size_t
     }
 
 
-    if (!getCenter(_x, _y)) return false;
-    // _x = 30;
-    // _y = 16;
+    if (!getCenter(_r, _c)) return false;
+    size_t _x = a*2*_r+a;
+    size_t _y = b*2*_c+b;
     //绘制横线
-    cv::line(img, cv::Point(_x - 8, _y), cv::Point(_x + 8, _y), CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(_y - 10, _x), cv::Point(_y + 10, _x), CV_RGB(255, 255, 255));
     //绘制竖线
-    cv::line(img, cv::Point(_x, _y - 10), cv::Point(_x, _y + 10), CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(_y, _x - 10), cv::Point(_y, _x + 10), CV_RGB(255, 255, 255));
     // cv::resize(img, img, cv::Size(r*b*COLS, r*a*ROWS));
     return true;
 }
@@ -82,14 +82,31 @@ bool AdtEigen::whole_calc(cv::Mat& img, size_t& _x, size_t& _y, size_t a, size_t
 bool AdtEigen::getCenter(size_t& _x, size_t& _y) {
     const auto& curr = data_[n_times_];
 
+//    Eigen::Matrix3d guass;
+//    guass << 0.0947416, 0.118318, 0.0947416,
+//             0.118318,  0.147761, 0.118318,
+//             0.0947416, 0.118318, 0.0947416;
+//    Eigen::MatrixXd blur(ROWS, COLS);
+//    for (size_t _r = 0; _r < ROWS; ++_r) {
+//        const auto& rows = curr.row(_r);
+//        for (size_t _c = 0; _c < COLS; ++_c) {
+//            if ((0 == _r) || (ROWS - 1 == _r)
+//                    || (0 == _c) || (COLS - 1 == _c)) {
+//                blur(_r, _c) = rows(_c);
+//                continue;
+//            }
+//            blur(_r, _c) = curr.block(_r-1, _c-1, 3, 3).cwiseProduct(guass).sum();
+//        }
+//    }
+
     double mean = curr.mean();
     double sqMean = curr.array().square().mean();
     double var  = sqMean - mean*mean;
     // std::cout << "mean: " << mean << std::endl;
     // std::cout << "var:  " << var  << std::endl;
 
-    double thr  = mean + 5*sqrt(var);
-
+    double thr  = mean + 0.5*sqrt(var);
+    std::cout << thr << std::endl;
     _x = 0;
     _y = 0;
     r_tmp_vec.clear();
@@ -100,10 +117,15 @@ bool AdtEigen::getCenter(size_t& _x, size_t& _y) {
         for (size_t _c = 0; _c < COLS; ++_c) {
             // std::cout << rows(_c) << " ";
             if (rows(_c) > thr) {
-                r_tmp_vec.push_back(_r);
-                c_tmp_vec.push_back(_c);
-                _x += _r;
-                _y += _c;
+                r_tmp_vec.push_back(_r/2);
+                _x += _r/2;
+                if (1 == _r%2) {
+                    c_tmp_vec.push_back(COLS+_c);
+                    _y += COLS+_c;
+                } else {
+                    c_tmp_vec.push_back(_c);
+                    _y += _c;
+                }
             }
         }
         // std::cout << std::endl;
@@ -112,6 +134,7 @@ bool AdtEigen::getCenter(size_t& _x, size_t& _y) {
     if ((r_tmp_vec.empty()) || (c_tmp_vec.empty())) return false;
     _x /= r_tmp_vec.size();
     _y /= c_tmp_vec.size();
+    // std::cout << "center: (" << _x << ", " << _y << ")" << std::endl;
     return true;
     // std::cout << "center: (" << mean_r << ", " << mean_c << ")" << std::endl;
 
@@ -205,6 +228,7 @@ cv::Mat AdtEigen::cvtCvMat(size_t _t, size_t a, size_t b, size_t r) {
 }
 
 void AdtEigen::print(size_t t) {
+    if (t == 1000) t = n_times_;
     const auto& _m = data_[t%N_times_];
     std::cout << _m << std::endl;
 }
@@ -310,6 +334,37 @@ void AdtEigen::saveOnce() {
     delete tmp_xmlfd_;
 
     clear();
+}
+
+bool AdtEigen::loadCSV(const std::string& file) {
+    std::ifstream ifd(file);
+    if (!ifd.is_open()) return false;
+
+    double tmp = 0;
+    auto& _m = data_[n_times_];
+    for (int r = 0; r < _m.rows(); ++r) {
+        for (int c = 0; c < _m.cols(); ++c) {
+            ifd >> tmp;
+            _m(r, c) = tmp;
+        }
+    }
+
+//    Eigen::Matrix3d guass;
+//    guass << 0.0947416, 0.118318, 0.0947416,
+//             0.118318,  0.147761, 0.118318,
+//             0.0947416, 0.118318, 0.0947416;
+//    // Eigen::MatrixXd blur(ROWS, COLS);
+//    for (size_t _r = 0; _r < ROWS; ++_r) {
+//        const auto& rows = _m.row(_r);
+//        for (size_t _c = 0; _c < COLS; ++_c) {
+//            if ((0 == _r) || (ROWS - 1 == _r)
+//                    || (0 == _c) || (COLS - 1 == _c)) {
+//                _m(_r, _c) = rows(_c);
+//                continue;
+//            }
+//            _m(_r, _c) = _m.block(_r-1, _c-1, 3, 3).cwiseProduct(guass).sum();
+//        }
+//    }
 }
 
 void AdtEigen::saveCSV(bool save_center) {

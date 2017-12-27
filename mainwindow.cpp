@@ -227,6 +227,18 @@ void MainWindow::connect_csr()
 //    std::cout << img.rows << " " << img.cols << std::endl;
 //    imshow(img);
 //    return;
+//    auto cfg = settings->settings();
+//    data_  = new AdtEigen(cfg.height, cfg.width, cfg.min_val, cfg.max_val);
+//    data_->setFile(cfg.data_path.toStdString());
+//    img_ = cv::Mat::zeros(3*data_->ROWS, 12*data_->COLS, CV_8UC1);
+//    data_->loadCSV("data.csv");
+//    // data_->print();
+
+//    size_t x, y;
+//    data_->whole_calc(img_, x, y);
+//    imshow(img_);
+//    ui->statusBar->showMessage(QString("Center: (") + QString::number(x) + ", " + QString::number(y) + ")");
+//    return;
 
     auto cfg = settings->settings();
     data_  = new AdtEigen(cfg.height, cfg.width, cfg.min_val, cfg.max_val);

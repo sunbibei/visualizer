@@ -35,8 +35,24 @@
 #include <Qt3DExtras/qfirstpersoncameracontroller.h>
 #include <Qt3DExtras/qt3dwindow.h>
 #endif
+
+#include "adt_eigen.h"
 int main(int argc, char *argv[])
 {
+//    AdtEigen data(88, 16);
+//    data.loadCSV("data.csv");
+//    // data.print();
+//    cv::imshow("debug", data.cvtCvMat());
+//    cv::waitKey(0);
+//    return 0;
+
+//    size_t x, y;
+//    cv::Mat img = cv::Mat::zeros(3*data.ROWS, 3*4*data.COLS, CV_8UC1);
+//    data.whole_calc(img, x, y);
+//    cv::namedWindow("debug");
+//    cv::imshow("debug", img);
+//    cv::waitKey(0);
+//    return 0;
 //    size_t ROWS = 8;
 //    size_t COLS = 16;
 //    Eigen::MatrixXd curr;

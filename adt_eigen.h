@@ -22,13 +22,14 @@ public:
 
     void clear();
 
-    void print(size_t t);
+    void print(size_t t = 1000);
     void saveCenter();
     void saveCSV(bool save_center = true);
     void save(bool save_center = true);
     void saveOnceCSV();
     void saveOnce();
     void saveAll();
+    bool loadCSV(const std::string& file);
     bool load(size_t _t, Eigen::MatrixXd&);
 
     bool getCenter(size_t& _x, size_t& _y);
