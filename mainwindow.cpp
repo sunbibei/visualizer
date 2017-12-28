@@ -165,7 +165,8 @@ void MainWindow::parse() {
                 if (is_ok) vals_view_ += ", center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
                 else  vals_view_ += ", Center  Error!";
             }
-            status->setText(vals_view_);
+
+            status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()));
             imshow(img_);
             ++count_;
             // std::cout << "add " << count_;

@@ -32,6 +32,8 @@ public:
     bool loadCSV(const std::string& file);
     bool load(size_t _t, Eigen::MatrixXd&);
 
+    const std::string& getCurrentFileName() {return only_file_name_;}
+
     bool getCenter(size_t& _x, size_t& _y);
     bool whole_calc(cv::Mat&, size_t&, size_t&, size_t a = 3, size_t b = 3, size_t r = 3);
     // for Debug
@@ -63,6 +65,7 @@ private:
     std::ofstream   center_ofd_;
     TiXmlDocument*  p_xmlfd_;
     std::ofstream   data_csv_;
+    std::string     only_file_name_;
     std::string     curr_file_name_;
     std::string     out_path_;
     size_t          last_times_;

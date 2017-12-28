@@ -273,7 +273,8 @@ bool AdtEigen::load(size_t _t, Eigen::MatrixXd& _out) {
 void AdtEigen::saveOnceCSV() {
     std::ofstream tmp_ofd;
     QDateTime curr_date =QDateTime::currentDateTime();
-    curr_file_name_ = out_path_ + "/once_" + curr_date.toString("yyyy_MM_dd_hh_mm_ss").toStdString() + ".csv";
+    only_file_name_ = "once_" + curr_date.toString("yyyy_MM_dd_hh_mm_ss").toStdString() + ".csv";
+    curr_file_name_ = out_path_ + "/" + only_file_name_;
     tmp_ofd.open(curr_file_name_);
 
 
@@ -301,7 +302,8 @@ void AdtEigen::saveOnceCSV() {
 void AdtEigen::saveOnce() {
     auto tmp_xmlfd_ = new TiXmlDocument;
     QDateTime curr_date = QDateTime::currentDateTime();
-    curr_file_name_ = out_path_ + "/once_" + curr_date.toString("yyyy_MM_dd_hh_mm_ss").toStdString() + ".xml";
+    only_file_name_ = "once_" + curr_date.toString("yyyy_MM_dd_hh_mm_ss").toStdString() + ".xml";
+    curr_file_name_ = out_path_ + "/" + only_file_name_;
     if (!tmp_xmlfd_->LoadFile(curr_file_name_)) {
         tmp_xmlfd_->LinkEndChild(new TiXmlDeclaration("1.0", "UTF-8", "yes"));
         tmp_xmlfd_->LinkEndChild(new TiXmlElement("history"));
@@ -376,7 +378,8 @@ void AdtEigen::saveCSV(bool save_center) {
 
     if (!data_csv_.is_open()) {
         QDateTime curr_date =QDateTime::currentDateTime();
-        curr_file_name_ = out_path_ + "/data_" + curr_date.toString("yyyy_MM_dd_hh_mm").toStdString() + ".csv";
+        only_file_name_ = "data_" + curr_date.toString("yyyy_MM_dd_hh_mm").toStdString() + ".csv";
+        curr_file_name_ = out_path_ + "/" + only_file_name_;
         data_csv_.open(curr_file_name_);
     }
     if (!center_ofd_.is_open()) {
@@ -419,7 +422,8 @@ void AdtEigen::save(bool save_center) {
     if (nullptr == p_xmlfd_) {
         p_xmlfd_ = new TiXmlDocument;
         QDateTime curr_date =QDateTime::currentDateTime();
-        curr_file_name_ = out_path_ + "/data_" + curr_date.toString("yyyy_MM_dd_hh_mm").toStdString() + ".xml";
+        only_file_name_ = "data_" + curr_date.toString("yyyy_MM_dd_hh_mm").toStdString() + ".xml";
+        curr_file_name_ = out_path_ + "/" + only_file_name_;
         if (!p_xmlfd_->LoadFile(curr_file_name_)) {
             p_xmlfd_->LinkEndChild(new TiXmlDeclaration("1.0", "UTF-8", "yes"));
             p_xmlfd_->LinkEndChild(new TiXmlElement("history"));

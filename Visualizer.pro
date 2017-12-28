@@ -24,7 +24,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-
 SOURCES += main.cpp\
         mainwindow.cpp \
     adt.cpp \
@@ -49,6 +48,7 @@ FORMS    += mainwindow.ui \
 
 QT += network
 
+win32 {
 INCLUDEPATH += D:/opencv/build/include \
     D:/opencv/build/include/opencv \
     D:/opencv/build/include/opencv2 \
@@ -59,7 +59,7 @@ LIBS += -LD:/opencv_mingw/lib \
 -lopencv_highgui2410 \
 -lopencv_imgproc2410 \
 -lopencv_video2410
-
+}
 
 macx {
 QMAKE_CXXFLAGS += -stdlib=libc++
