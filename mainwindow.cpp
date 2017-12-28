@@ -57,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent) :
     status = new QLabel;
     ui->statusBar->addWidget(status);
 
+    ui->maxValue->setText("4");
+    ui->threshold->setText("5");
+
     dis_start = false;
 
     initPlot();
@@ -151,19 +154,46 @@ void MainWindow::parse() {
             // showData(count_);
             // vals_view_ = "";
             size_t c[2] = {0};
-            // bool is_ok = false;
-            bool is_ok = data_->whole_calc(img_, c[0], c[1]);
+            bool is_cvt = false;
+            double max   = -1;
+            double thres = -1;
+            if (!ui->maxValue->text().isEmpty()) {
+                max = ui->maxValue->text().toDouble(&is_cvt);
+                if (!is_cvt) ui->maxValue->setText("ERROR VALUE");
+                else max = -1;
+            }
+            if (!ui->threshold->text().isEmpty()) {
+                thres = ui->threshold->text().toDouble(&is_cvt);
+                if (!is_cvt) ui->threshold->setText("ERROR VALUE");
+                else thres = -1;
+            }
+
+            bool is_ok = data_->whole_calc(img_, c[0], c[1], max, thres);
             if (SINGLE == recv_state_) {
                 data_->clear();
                 count_ = 0;
                 // data_->getCenter(c[0], c[1]);
-                if (is_ok) vals_view_ = "Center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
-                else  vals_view_ = "Center  Error!";
+                if (is_ok) {
+                    vals_view_ = "Center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
+                } else  {
+                    vals_view_ = "Center  Error!";
+                }
             } else {
                 if (0 == count_ % 10) plotCenter(c);
                 vals_view_ = "frame: " + QString::number(count_);
-                if (is_ok) vals_view_ += ", center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
-                else  vals_view_ += ", Center  Error!";
+                if (is_ok) {
+                    vals_view_ += ", center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
+                } else {
+                    vals_view_ += ", Center  Error!";
+                }
+            }
+            if (is_ok) {
+                ui->center_x->setText(QString::number(c[0]));
+                ui->center_y->setText(QString::number(c[1]));
+            } else  {
+                vals_view_ = "Center  Error!";
+                ui->center_x->setText("");
+                ui->center_y->setText("");
             }
 
             status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()));
@@ -250,6 +280,56 @@ void MainWindow::connect_csr()
 //    std::cout << img.rows << " " << img.cols << std::endl;
 //    imshow(img);
     // return;
+    data_->loadCSV("/Users/bibei/Downloads/jg/20171225/test.csv");
+    // data_->print();
+//    size_t c[2] = {0};
+//    bool is_cvt = false;
+//    double max   = -1;
+//    double thres = -1;
+//    if (!ui->maxValue->text().isEmpty()) {
+//        max = ui->maxValue->text().toDouble(&is_cvt);
+//        if (!is_cvt) ui->maxValue->setText("ERROR VALUE");
+//        else max = -1;
+//    }
+//    if (!ui->threshold->text().isEmpty()) {
+//        thres = ui->threshold->text().toDouble(&is_cvt);
+//        if (!is_cvt) ui->threshold->setText("ERROR VALUE");
+//        else thres = -1;
+//    }
+
+//    bool is_ok = data_->whole_calc(img_, c[0], c[1], max, thres);
+//    if (SINGLE == recv_state_) {
+//        data_->clear();
+//        count_ = 0;
+//        // data_->getCenter(c[0], c[1]);
+//        if (is_ok) {
+//            vals_view_ = "Center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
+//        } else  {
+//            vals_view_ = "Center  Error!";
+//        }
+//    } else {
+//        if (0 == count_ % 10) plotCenter(c);
+//        vals_view_ = "frame: " + QString::number(count_);
+//        if (is_ok) {
+//            vals_view_ += ", center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
+//        } else {
+//            vals_view_ += ", Center  Error!";
+//        }
+//    }
+//    if (is_ok) {
+//        ui->center_x->setText(QString::number(c[0]));
+//        ui->center_y->setText(QString::number(c[1]));
+//    } else  {
+//        vals_view_ = "Center  Error!";
+//        ui->center_x->setText("");
+//        ui->center_y->setText("");
+//    }
+
+//    status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()));
+//    imshow(img_);
+//    ++count_;
+//    return;
+
     switch (socket->state()) {
     case QAbstractSocket::SocketState::UnconnectedState:
         socket->connectToHost(cfg.ip, cfg.port, QTcpSocket::ReadWrite);

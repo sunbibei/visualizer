@@ -112,16 +112,22 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
-            <widget class="QLineEdit" name="lineEdit">
+            <widget class="QLineEdit" name="center_x">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_2">
+            <widget class="QLineEdit" name="center_y">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -132,7 +138,7 @@
            <item>
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>X</string>
+              <string>--</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -142,7 +148,7 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>X</string>
+              <string>--</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -154,10 +160,24 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
-            <widget class="QLineEdit" name="lineEdit_3"/>
+            <widget class="QLineEdit" name="lineEdit_3">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_4"/>
+            <widget class="QLineEdit" name="lineEdit_4">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -166,7 +186,7 @@
            <item>
             <widget class="QLabel" name="label_6">
              <property name="text">
-              <string>X</string>
+              <string>--</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -176,7 +196,7 @@
            <item>
             <widget class="QLabel" name="label_5">
              <property name="text">
-              <string>X</string>
+              <string>--</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -188,10 +208,24 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="QLineEdit" name="lineEdit_5"/>
+            <widget class="QLineEdit" name="lineEdit_5">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_6"/>
+            <widget class="QLineEdit" name="lineEdit_6">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -210,7 +244,7 @@
            <item>
             <widget class="QLabel" name="label_8">
              <property name="text">
-              <string>X</string>
+              <string>Threshold</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -222,10 +256,18 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QLineEdit" name="lineEdit_7"/>
+            <widget class="QLineEdit" name="maxValue">
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_8"/>
+            <widget class="QLineEdit" name="threshold">
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
