@@ -389,10 +389,10 @@ void MainWindow::initPlot() {
     plot[G_Y] = ui->ploty;
     // plot_timer_ = new QTimer(this);
     plot[G_X]->xAxis->setRange(0, 24);
-    plot[G_X]->yAxis->setRange(0, 88);
+    plot[G_X]->yAxis->setRange(0, 44);
 
     plot[G_Y]->xAxis->setRange(0, 24);
-    plot[G_Y]->yAxis->setRange(0, 16);
+    plot[G_Y]->yAxis->setRange(0, 32);
 
     keys_.reserve(60*24);
     vals_.resize(N_G);

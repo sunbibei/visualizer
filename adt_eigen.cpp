@@ -67,6 +67,10 @@ bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, size_t a, size_t
         }
     }
 
+    // plot coordinate system
+    cv::line(img, cv::Point(img.rows - a, b), cv::Point(0, b),    CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(img.rows - a, b), cv::Point(img.rows - a, img.cols - b), CV_RGB(255, 255, 255));
+    cv::putText(img, "O", cv::Point(img.rows - a, b), 4, 2.5, Scalar( 0, 0, 0 ), 4);
 
     if (!getCenter(_r, _c)) return false;
     size_t _x = a*2*_r+a;
