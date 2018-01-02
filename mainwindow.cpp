@@ -2,10 +2,14 @@
 #include "ui_mainwindow.h"
 #include "settingsdialog.h"
 
+#include <chrono>
 
 #include <QLabel>
+
 #include <fstream>
 #include <opencv2/opencv.hpp>
+
+#include <stdio.h>
 
 const size_t DELIMITER_SIZE = 1;
 const char DELIMITER     = '\n';
@@ -13,6 +17,13 @@ const char START_CHAR    = 0x02; // STX
 const char END_CHAR      = 0x03; // ETX
 // const char START_CHAR       = '*';
 // const char END_CHAR         = '!';
+
+//FILE* fp = NULL; //open("tmp.txt");
+//FILE* fp1 = NULL;
+
+std::chrono::high_resolution_clock::time_point t0_;
+std::chrono::high_resolution_clock::time_point t1_;
+
 
 #ifdef USE_QT_3D
 void MainWindow::setmodifier(SceneModifier* ptr) {
@@ -28,7 +39,8 @@ QWidget* MainWindow::getView() {
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow), data_(nullptr),
-    READ_BUF_SIZE(1024*16), recv_state_(NO_CONNECT)
+    READ_BUF_SIZE(1024*1024), recv_state_(NO_CONNECT),
+    state_data_(C_I), thread_alive_(false)
 {
     ui->setupUi(this);
     settings  = new SettingsDialog;
@@ -64,6 +76,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initPlot();
     initActionsConnections();
+
+    exp_ = 3;
+//    fp = fopen("tmp.txt", "w");
+//    fp1 = fopen("tmp1.txt", "w");
 }
 
 MainWindow::~MainWindow()
@@ -79,6 +95,9 @@ MainWindow::~MainWindow()
     delete ui;
     delete settings;
     if (data_) delete data_;
+
+//    fclose(fp);
+//    fclose(fp1);
 }
 
 //void MainWindow::readyread() {
@@ -116,111 +135,144 @@ inline void MainWindow::__parse_value(char* _raw) {
 }
 
 void MainWindow::parse() {
-    int size = buf_top_ - buf_btm_;
+    // int size = buf_top_ - buf_btm_;
     // ui->textBrowser->append("Enter: residual -- (" + QString::number(size) + "/1024)");
 
+//    char* off1 = buf_btm_;
+//    while (off1 != buf_top_) {
+//        fprintf(fp, "0x%02X ", *off1);
+//        fprintf(fp1, "%c ", *off1);
+//        ++off1;
+//    }
+//    fprintf(fp, "\r\n");
+//    fprintf(fp1, "\r\n");
+//    buf_btm_ = buf_top_;
+//    if ((BUF_END_ - buf_top_) < 44) {
+//        // buf_lock_.lock();
+//        size_t _s = buf_top_ - buf_btm_;
+//        memmove(read_buf_, buf_btm_, _s);
+//        buf_btm_ = read_buf_;
+//        buf_top_ = buf_btm_ + _s;
+//        // buf_lock_.unlock();
+//    }
+//    size = buf_top_ - buf_btm_;
+//    return;
     const int LEN   = 11;
-    char* off = buf_btm_;
-    while (off != buf_top_) {
-        if (DELIMITER == *off) {
-            if ((off - buf_btm_) != LEN) {
-                off += DELIMITER_SIZE;
+//    while (thread_alive_) {
+        char* off = buf_btm_;
+        while (off != buf_top_) {
+            if (DELIMITER == *off) {
+                if ((off - buf_btm_) != LEN) {
+                    off += DELIMITER_SIZE;
+                    buf_btm_ = off;
+                    continue;
+                }
+                state_data_ = C_F;
+                __parse_value(buf_btm_);
+                off += DELIMITER_SIZE; // eat the '\n'
                 buf_btm_ = off;
-                continue;
-            }
-            __parse_value(buf_btm_);
-            off += DELIMITER_SIZE; // eat the '\n'
-            buf_btm_ = off;
-            // debug_str += QString::number(tmp_r_) + " " + QString::number(tmp_c_) + " " + QString::number(tmp_v_) + "\n";
-            // ui->textBrowser->setText(debug_str);
-        } else if (END_CHAR == *off) {
-            while ((END_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
-            if (DELIMITER == *off) off += DELIMITER_SIZE;
+                // debug_str += QString::number(tmp_r_) + " " + QString::number(tmp_c_) + " " + QString::number(tmp_v_) + "\n";
+                // ui->textBrowser->setText(debug_str);
+            } else if (END_CHAR == *off) {
+                while ((END_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
+                if (DELIMITER == *off) off += DELIMITER_SIZE;
 
-            buf_btm_ = off;
-            if (settings->settings().is_xml) {
-                if (SINGLE == recv_state_)
-                    data_->saveOnce();
-               else
-                    data_->save();
+                if (C_F != state_data_) continue;
 
-            } else {
-                if (SINGLE == recv_state_)
-                    data_->saveOnceCSV();
-                else
-                    data_->saveCSV();
-            }
+                t1_ = std::chrono::high_resolution_clock::now();
+                int64_t span = std::chrono::duration_cast<std::chrono::milliseconds>
+                        (t1_ - t0_).count();
+                ui->lineEdit_3->setText(QString::number(span));
+                buf_btm_ = off;
+                if (settings->settings().is_xml) {
+                    if (SINGLE == recv_state_)
+                        data_->saveOnce();
+                   else
+                        data_->save();
 
-            // showData(count_);
-            // vals_view_ = "";
-            size_t c[2] = {0};
-            bool is_cvt = false;
-            double max   = -1;
-            double thres = -1;
-            if (!ui->maxValue->text().isEmpty()) {
-                max = ui->maxValue->text().toDouble(&is_cvt);
-                if (!is_cvt) ui->maxValue->setText("ERROR VALUE");
-                else max = -1;
-            }
-            if (!ui->threshold->text().isEmpty()) {
-                thres = ui->threshold->text().toDouble(&is_cvt);
-                if (!is_cvt) ui->threshold->setText("ERROR VALUE");
-                else thres = -1;
-            }
-
-            bool is_ok = data_->whole_calc(img_, c[0], c[1], max, thres);
-            if (SINGLE == recv_state_) {
-                data_->clear();
-                count_ = 0;
-                // data_->getCenter(c[0], c[1]);
-                if (is_ok) {
-                    vals_view_ = "Center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
-                } else  {
-                    vals_view_ = "Center  Error!";
-                }
-            } else {
-                if (0 == count_ % 10) plotCenter(c);
-                vals_view_ = "frame: " + QString::number(count_);
-                if (is_ok) {
-                    vals_view_ += ", center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
                 } else {
-                    vals_view_ += ", Center  Error!";
+                    if (SINGLE == recv_state_)
+                        data_->saveOnceCSV();
+                    else
+                        data_->saveCSV();
                 }
-            }
-            if (is_ok) {
-                ui->center_x->setText(QString::number(c[0]));
-                ui->center_y->setText(QString::number(c[1]));
-            } else  {
-                vals_view_ = "Center  Error!";
-                ui->center_x->setText("");
-                ui->center_y->setText("");
-            }
 
-            status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()));
-            imshow(img_);
-            ++count_;
-            // std::cout << "add " << count_;
-            // ui->textBrowser->append("add " + QString::number(count_-1));
-        } else if (START_CHAR == *off) {
-            while ((START_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
-            if (DELIMITER == *off) off += DELIMITER_SIZE;
+                // showData(count_);
+                // vals_view_ = "";
+                size_t c[2] = {0};
+                bool is_cvt = false;
+                double max   = -1;
+                double thres = -1;
+                if (!ui->maxValue->text().isEmpty()) {
+                    max = ui->maxValue->text().toDouble(&is_cvt);
+                    if (!is_cvt) ui->maxValue->setText("ERROR VALUE");
+                    else max = -1;
+                }
+                if (!ui->threshold->text().isEmpty()) {
+                    thres = ui->threshold->text().toDouble(&is_cvt);
+                    if (!is_cvt) ui->threshold->setText("ERROR VALUE");
+                    else thres = -1;
+                }
 
-            buf_btm_ = off;
-        } else {
-            ++off;
+                bool is_ok = data_->whole_calc(img_, c[0], c[1], max, thres, exp_);
+                if (SINGLE == recv_state_) {
+                    data_->clear();
+                    count_ = 0;
+                    // data_->getCenter(c[0], c[1]);
+                    if (is_ok) {
+                        vals_view_ = "Center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
+                    } else  {
+                        vals_view_ = "Center  Error!";
+                    }
+                } else {
+                    if (0 == count_ % 10) plotCenter(c);
+                    vals_view_ = "frame: " + QString::number(count_);
+                    if (is_ok) {
+                        vals_view_ += ", center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
+                    } else {
+                        vals_view_ += ", Center  Error!";
+                    }
+                }
+                if (is_ok) {
+                    ui->center_x->setText(QString::number(c[0]));
+                    ui->center_y->setText(QString::number(c[1]));
+                } else  {
+                    ui->center_x->setText("");
+                    ui->center_y->setText("");
+                }
+
+                status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()) + " " + QString::number(span));
+                imshow(img_);
+                ++count_;
+                t0_ = std::chrono::high_resolution_clock::now();
+                span = std::chrono::duration_cast<std::chrono::milliseconds>
+                                    (t0_ - t1_).count();
+                ui->lineEdit_4->setText(QString::number(span));
+                // std::cout << "add " << count_;
+                // ui->textBrowser->append("add " + QString::number(count_-1));
+            } else if (START_CHAR == *off) {
+                while ((START_CHAR == *off) && (off < buf_top_)) ++off; // eat the all of the END_CHAR
+                if (DELIMITER == *off) off += DELIMITER_SIZE;
+                state_data_ = C_S;
+                buf_btm_ = off;
+
+                t0_ = std::chrono::high_resolution_clock::now();
+            } else {
+                ++off;
+            }
         }
-    }
 
-    if ((BUF_END_ - buf_top_) < 4*LEN) {
-        // buf_lock_.lock();
-        size_t _s = buf_top_ - buf_btm_;
-        memmove(read_buf_, buf_btm_, _s);
-        buf_btm_ = read_buf_;
-        buf_top_ = buf_btm_ + _s;
-        // buf_lock_.unlock();
-    }
-    size = buf_top_ - buf_btm_;
-    // ui->textBrowser->append("Out:   parsed -- (" + QString::number(size) + "/1024)");
+        if ((BUF_END_ - buf_top_) < 4*LEN) {
+            // buf_lock_.lock();
+            size_t _s = buf_top_ - buf_btm_;
+            memmove(read_buf_, buf_btm_, _s);
+            buf_btm_ = read_buf_;
+            buf_top_ = buf_btm_ + _s;
+            // buf_lock_.unlock();
+        }
+        // size = buf_top_ - buf_btm_;
+        // ui->textBrowser->append("Out:   parsed -- (" + QString::number(size) + "/1024)");
+    //}
 }
 
 void MainWindow::showData(size_t) {
@@ -230,7 +282,8 @@ void MainWindow::showData(size_t) {
 void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format format) {
     //cv::imshow("test", _img);
     //return;
-    cv::Mat img = cv::Mat(_img);
+    cv::Mat img = _img.t();
+    cv::flip(img, img, 0);
     if (auto_resize)
         cv::resize(img, img, cv::Size(ui->imshow->width(), ui->imshow->height()));
     // cv::cvtColor(img, img, CV_BGR2RGB);
@@ -274,13 +327,13 @@ void MainWindow::connect_csr()
     auto cfg = settings->settings();
     data_  = new AdtEigen(cfg.height, cfg.width, cfg.min_val, cfg.max_val);
     data_->setFile(cfg.data_path.toStdString());
-    img_ = cv::Mat::zeros(3*data_->ROWS, 12*data_->COLS, CV_8UC1);
+    img_ = cv::Mat::zeros(exp_*2*data_->ROWS/2, exp_*2*2*data_->COLS, CV_8UC1);
     // showData(0);
 //    cv::Mat img = data_->cvtCvMat(0); // cv::imread("/home/bibei/photo.jpg");
 //    std::cout << img.rows << " " << img.cols << std::endl;
 //    imshow(img);
     // return;
-    data_->loadCSV("/Users/bibei/Downloads/jg/20171225/test.csv");
+    // data_->loadCSV("/Users/bibei/Downloads/jg/20171225/test.csv");
     // data_->print();
 //    size_t c[2] = {0};
 //    bool is_cvt = false;
@@ -393,6 +446,9 @@ void MainWindow::csrClosed() {
     ui->actionConfigure->setEnabled(true);
 
     data_->clear();
+
+//    thread_alive_ = false;
+//    parse_thread_.waitForFinished();
 }
 
 void MainWindow::csrConnected() {
@@ -404,6 +460,9 @@ void MainWindow::csrConnected() {
     ui->actionConfigure->setEnabled(false);
 
     data_->clear();
+
+//    thread_alive_ = true;
+//    parse_thread_ = QtConcurrent::run(this, &MainWindow::parse);
 }
 
 void MainWindow::initActionsConnections()

@@ -50,39 +50,45 @@ void AdtEigen::clear() {
     last_times_ = N_times_;
 }
 
-bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, double thres, size_t a, size_t b, size_t r) {
+bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, double thres, size_t a) {
     const auto& _s = data_[n_times_];
     // img.resize(a*ROWS, b*4*COLS);
     if (max <= 0) max = max_val_;
 
     double scale = (max == min_val_) ? 0 : 255.0/(max - min_val_);
     // double scale = 0.111;
-    // img = cv::Mat::zeros(a*ROWS, b*4*COLS, CV_8UC1);
-    // return img;
+    // img = cv::Mat::zeros(b*4*COLS, a*ROWS, CV_8UC1);
+    // return img; 16 * 88
     for (int r = 0; r < ROWS; r += 2) {
         for (int i = 0; i < 2; ++i) {
             auto data_r = _s.row(r+i);
             for (int c = 0; c < COLS; ++c) {
                 __set_value(img, cv::Range(a*r, 2*a+r*a),
-                            cv::Range(2*b*(i*COLS+c), 2*b*(i*COLS+c) + 2*b), data_r(c)*scale);
+                            cv::Range(2*a*(i*COLS+c), 2*a*(i*COLS+c) + 2*a), data_r(c)*scale);
             }
         }
     }
 
     // plot coordinate system
-    cv::line(img, cv::Point(a, b), cv::Point(img.cols - a, b), CV_RGB(255, 255, 255));
-    cv::line(img, cv::Point(a, b), cv::Point(a, img.rows - b), CV_RGB(255, 255, 255));
-    cv::putText(img, "0", cv::Point(a + 10, b + 20), 0.5, 0.5, cv::Scalar(255, 255, 255), 1);
+    cv::line(img, cv::Point(a, a), cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(img.cols-3*a, 0), cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(img.cols-3*a, 2*a), cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
+
+    cv::line(img, cv::Point(a, a), cv::Point(a, img.rows - a), CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(0, img.rows-3*a), cv::Point(a, img.rows - a), CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(2*a, img.rows-3*a), cv::Point(a, img.rows - a), CV_RGB(255, 255, 255));
+
+    cv::putText(img, "0", cv::Point(a + 10, a + 20), 0.5, 0.5, cv::Scalar(255, 255, 255), 1);
 
     if (!getCenter(_r, _c, thres)) return false;
     size_t _x = a*2*_r+a;
-    size_t _y = b*2*_c+b;
+    size_t _y = a*2*_c+a;
     //绘制横线
     cv::line(img, cv::Point(_y, a), cv::Point(_y, _x), CV_RGB(255, 255, 255));
     //绘制竖线
-    cv::line(img, cv::Point(b, _x), cv::Point(_y, _x), CV_RGB(255, 255, 255));
-    cv::putText(img, std::to_string(_r), cv::Point(_y, a+20), 0.5, 0.5, cv::Scalar(255, 255, 255), 1);
-    cv::putText(img, std::to_string(_c), cv::Point(b+10, _x-5), 0.5, 0.5, cv::Scalar(255, 255, 255), 1);
+    cv::line(img, cv::Point(a, _x), cv::Point(_y, _x), CV_RGB(255, 255, 255));
+    // cv::putText(img, std::to_string(_r), cv::Point(_y, a+20), 0.5, 0.5, cv::Scalar(255, 255, 255), 1);
+    // cv::putText(img, std::to_string(_c), cv::Point(a+10, _x-5), 0.5, 0.5, cv::Scalar(255, 255, 255), 1);
     // cv::resize(img, img, cv::Size(r*b*COLS, r*a*ROWS));
     return true;
 }
@@ -114,7 +120,7 @@ bool AdtEigen::getCenter(size_t& _x, size_t& _y, double thres) {
     // std::cout << "var:  " << var  << std::endl;
     if (thres < 0) thres = 5;
     double thr  = mean + thres*sqrt(var);
-    std::cout << thr << std::endl;
+    // std::cout << thr << std::endl;
     _x = 0;
     _y = 0;
     r_tmp_vec.clear();

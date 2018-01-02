@@ -49,16 +49,21 @@ FORMS    += mainwindow.ui \
 QT += network
 
 win32 {
-INCLUDEPATH += D:/opencv/build/include \
-    D:/opencv/build/include/opencv \
-    D:/opencv/build/include/opencv2 \
-    D:/Eigen3.3.4
+# INCLUDEPATH += D:/opencv/build/include \
+#    D:/opencv/build/include/opencv \
+#    D:/opencv/build/include/opencv2 \
+#    D:/Eigen3.3.4
+INCLUDEPATH += D:/OpenCV/build/install/include \
+    D:/OpenCV/build/install/include/opencv \
+    D:/OpenCV/build/install/include/opencv2 \
+    D:/eigen
 
-LIBS += -LD:/opencv_mingw/lib \
--lopencv_core2410 \
--lopencv_highgui2410 \
--lopencv_imgproc2410 \
--lopencv_video2410
+# LIBS += -LD:/opencv_mingw/lib \
+LIBS += -LD:/OpenCV/build/lib \
+-lopencv_core249 \
+-lopencv_highgui249 \
+-lopencv_imgproc249 \
+-lopencv_video249
 }
 
 macx {

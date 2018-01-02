@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>756</width>
+    <width>840</width>
     <height>631</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>311</width>
+         <width>481</width>
          <height>331</height>
         </rect>
        </property>
@@ -35,7 +35,7 @@
         <rect>
          <x>-1</x>
          <y>340</y>
-         <width>741</width>
+         <width>811</width>
          <height>101</height>
         </rect>
        </property>
@@ -45,7 +45,7 @@
         <rect>
          <x>-1</x>
          <y>449</y>
-         <width>741</width>
+         <width>811</width>
          <height>91</height>
         </rect>
        </property>
@@ -53,9 +53,9 @@
       <widget class="QLabel" name="val_view">
        <property name="geometry">
         <rect>
-         <x>336</x>
+         <x>490</x>
          <y>10</y>
-         <width>181</width>
+         <width>111</width>
          <height>321</height>
         </rect>
        </property>
@@ -66,7 +66,7 @@
       <widget class="QGroupBox" name="groupBox">
        <property name="geometry">
         <rect>
-         <x>510</x>
+         <x>610</x>
          <y>0</y>
          <width>201</width>
          <height>331</height>
@@ -283,8 +283,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>756</width>
-     <height>22</height>
+     <width>840</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">

@@ -7,6 +7,7 @@
 #include <QString>
 #include <QDataStream>
 #include <QByteArray>
+#include <QtConcurrent/QtConcurrent>
 #include <mutex>
 
 #include "adt_eigen.h"
@@ -83,6 +84,13 @@ private:
     QString         vals_view_;
 
     cv::Mat         img_;
+    int             exp_;
+    enum {
+        C_I = -1,
+        C_S = 0,
+        C_F,
+        C_E,
+    } state_data_;
 
     bool            dis_start;
     enum {
@@ -101,6 +109,8 @@ private:
 #endif
     AdtEigen*   data_;
 
+    QFuture<void>     parse_thread_;
+    bool              thread_alive_;
     // The buffer for read
     std::mutex        buf_lock_;
     const size_t      READ_BUF_SIZE;
