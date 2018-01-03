@@ -10,6 +10,8 @@
 #include <QtConcurrent/QtConcurrent>
 #include <mutex>
 
+#include <fstream>
+
 #include "adt_eigen.h"
 #include "qcustomplot.h"
 #include "scenemodifier.h"
@@ -80,6 +82,8 @@ private:
     QTimer*         plot_timer_;
     QVector<double> keys_;
     QVector<QVector<double>> vals_;
+
+    std::ofstream   center_ofd_;
 
     QString         vals_view_;
 

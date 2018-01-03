@@ -60,7 +60,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Reserve</string>
+        <string/>
        </property>
       </widget>
       <widget class="QGroupBox" name="groupBox">
@@ -138,7 +138,7 @@
            <item>
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>--</string>
+              <string>型号</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -148,7 +148,7 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>--</string>
+              <string>距离</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -160,9 +160,9 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
-            <widget class="QLineEdit" name="lineEdit_3">
+            <widget class="QLineEdit" name="model">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -170,9 +170,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_4">
+            <widget class="QLineEdit" name="distance">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -186,7 +186,7 @@
            <item>
             <widget class="QLabel" name="label_6">
              <property name="text">
-              <string>--</string>
+              <string>偏角1</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -196,7 +196,7 @@
            <item>
             <widget class="QLabel" name="label_5">
              <property name="text">
-              <string>--</string>
+              <string>偏角2</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -208,9 +208,9 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="QLineEdit" name="lineEdit_5">
+            <widget class="QLineEdit" name="alpha1">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -218,9 +218,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_6">
+            <widget class="QLineEdit" name="alpha2">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -234,7 +234,7 @@
            <item>
             <widget class="QLabel" name="label_7">
              <property name="text">
-              <string>Maximum</string>
+              <string>最大值</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -244,7 +244,7 @@
            <item>
             <widget class="QLabel" name="label_8">
              <property name="text">
-              <string>Threshold</string>
+              <string>光斑直径</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -263,7 +263,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="threshold">
+            <widget class="QLineEdit" name="diameter">
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
@@ -284,7 +284,7 @@
      <x>0</x>
      <y>0</y>
      <width>840</width>
-     <height>23</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">

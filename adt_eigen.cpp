@@ -39,7 +39,7 @@ AdtEigen::~AdtEigen() {
         p_xmlfd_ = nullptr;
     }
 
-    if (center_ofd_.is_open()) center_ofd_.close();
+    // if (center_ofd_.is_open()) center_ofd_.close();
 }
 
 void AdtEigen::clear() {
@@ -77,8 +77,6 @@ bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, doub
     cv::line(img, cv::Point(a, a), cv::Point(a, img.rows - a), CV_RGB(255, 255, 255));
     cv::line(img, cv::Point(0, img.rows-3*a), cv::Point(a, img.rows - a), CV_RGB(255, 255, 255));
     cv::line(img, cv::Point(2*a, img.rows-3*a), cv::Point(a, img.rows - a), CV_RGB(255, 255, 255));
-
-    cv::putText(img, "0", cv::Point(a + 10, a + 20), 0.5, 0.5, cv::Scalar(255, 255, 255), 1);
 
     if (!getCenter(_r, _c, thres)) return false;
     size_t _x = a*2*_r+a;
@@ -396,9 +394,9 @@ void AdtEigen::saveCSV(bool save_center) {
         curr_file_name_ = out_path_ + "/" + only_file_name_;
         data_csv_.open(curr_file_name_);
     }
-    if (!center_ofd_.is_open()) {
-        center_ofd_.open(out_path_ + "/center.csv");
-    }
+//    if (!center_ofd_.is_open()) {
+//        center_ofd_.open(out_path_ + "/center.csv");
+//    }
 
     const size_t BUF_SIZE   = 1024;
     const size_t VALUE_SIZE = 8;
@@ -406,11 +404,11 @@ void AdtEigen::saveCSV(bool save_center) {
     memset(tmp, 0x00, BUF_SIZE*sizeof(char));
 
     std::string time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString();
-    if (save_center) {
-        size_t x, y;
-        getCenter(x, y);
-        center_ofd_ << time << "," << x << "," << y << std::endl;
-    }
+//    if (save_center) {
+//        size_t x, y;
+//        getCenter(x, y);
+//        center_ofd_ << time << "," << x << "," << y << std::endl;
+//    }
     data_csv_ << "timestamp, " << time << ",times, " << s_times_*N_times_ + n_times_
               << ",rows, " << ROWS << ",cols, " << COLS << std::endl;
 
@@ -443,9 +441,9 @@ void AdtEigen::save(bool save_center) {
             p_xmlfd_->LinkEndChild(new TiXmlElement("history"));
         }
     }
-    if (!center_ofd_.is_open()) {
-        center_ofd_.open(out_path_ + "/center.csv");
-    }
+//    if (!center_ofd_.is_open()) {
+//        center_ofd_.open(out_path_ + "/center.csv");
+//    }
 
     const size_t BUF_SIZE   = 1024;
     const size_t VALUE_SIZE = 8;
@@ -454,11 +452,11 @@ void AdtEigen::save(bool save_center) {
 
     TiXmlElement* _new = new TiXmlElement("record");
     std::string time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString();
-    if (save_center) {
-        size_t x, y;
-        getCenter(x, y);
-        center_ofd_ << time << "," << x << "," << y << std::endl;
-    }
+//    if (save_center) {
+//        size_t x, y;
+//        getCenter(x, y);
+//        center_ofd_ << time << "," << x << "," << y << std::endl;
+//    }
 
     _new->SetAttribute("timestamp", time);
     _new->SetAttribute("times",     s_times_*N_times_ + n_times_);
@@ -481,13 +479,13 @@ void AdtEigen::save(bool save_center) {
 }
 
 void AdtEigen::saveCenter() {
-    if (center_ofd_.is_open()) {
-        size_t x, y;
-        getCenter(x, y);
+//    if (center_ofd_.is_open()) {
+//        size_t x, y;
+//        getCenter(x, y);
 
-        std::string time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString();
-        center_ofd_ << time << "," << x << "," << y << std::endl;
-    }
+//        std::string time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString();
+//        center_ofd_ << time << "," << x << "," << y << std::endl;
+//    }
 }
 
 void AdtEigen::saveAll() {

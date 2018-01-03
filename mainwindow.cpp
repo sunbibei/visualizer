@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addWidget(status);
 
     ui->maxValue->setText("4");
-    ui->threshold->setText("5");
+    // ui->threshold->setText("5");
 
     dis_start = false;
 
@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initActionsConnections();
 
     exp_ = 3;
+
 //    fp = fopen("tmp.txt", "w");
 //    fp1 = fopen("tmp1.txt", "w");
 }
@@ -179,10 +180,10 @@ void MainWindow::parse() {
 
                 if (C_F != state_data_) continue;
 
-                t1_ = std::chrono::high_resolution_clock::now();
-                int64_t span = std::chrono::duration_cast<std::chrono::milliseconds>
-                        (t1_ - t0_).count();
-                ui->lineEdit_3->setText(QString::number(span));
+//                t1_ = std::chrono::high_resolution_clock::now();
+//                int64_t span = std::chrono::duration_cast<std::chrono::milliseconds>
+//                        (t1_ - t0_).count();
+//                ui->lineEdit_3->setText(QString::number(span));
                 buf_btm_ = off;
                 if (settings->settings().is_xml) {
                     if (SINGLE == recv_state_)
@@ -202,17 +203,17 @@ void MainWindow::parse() {
                 size_t c[2] = {0};
                 bool is_cvt = false;
                 double max   = -1;
-                double thres = -1;
+                double thres = 5;
                 if (!ui->maxValue->text().isEmpty()) {
                     max = ui->maxValue->text().toDouble(&is_cvt);
                     if (!is_cvt) ui->maxValue->setText("ERROR VALUE");
                     else max = -1;
                 }
-                if (!ui->threshold->text().isEmpty()) {
-                    thres = ui->threshold->text().toDouble(&is_cvt);
-                    if (!is_cvt) ui->threshold->setText("ERROR VALUE");
-                    else thres = -1;
-                }
+//                if (!ui->threshold->text().isEmpty()) {
+//                    thres = ui->threshold->text().toDouble(&is_cvt);
+//                    if (!is_cvt) ui->threshold->setText("ERROR VALUE");
+//                    else thres = -1;
+//                }
 
                 bool is_ok = data_->whole_calc(img_, c[0], c[1], max, thres, exp_);
                 if (SINGLE == recv_state_) {
@@ -225,7 +226,7 @@ void MainWindow::parse() {
                         vals_view_ = "Center  Error!";
                     }
                 } else {
-                    if (0 == count_ % 10) plotCenter(c);
+                    if ((0 == count_ % 10) && (is_ok)) plotCenter(c);
                     vals_view_ = "frame: " + QString::number(count_);
                     if (is_ok) {
                         vals_view_ += ", center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
@@ -233,21 +234,31 @@ void MainWindow::parse() {
                         vals_view_ += ", Center  Error!";
                     }
                 }
+
+                std::string time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString();
                 if (is_ok) {
                     ui->center_x->setText(QString::number(c[0]));
                     ui->center_y->setText(QString::number(c[1]));
+                    center_ofd_ << time << "," << c[0] << "," << c[1] << ",";
                 } else  {
                     ui->center_x->setText("");
                     ui->center_y->setText("");
+                    center_ofd_ << time << ",-,-,";
                 }
+                center_ofd_ << (ui->model->text().isEmpty() ? "-" : ui->model->text().toStdString()) << ",";
+                center_ofd_ << (ui->distance->text().isEmpty() ? "-" : ui->distance->text().toStdString()) << ",";
+                center_ofd_ << (ui->alpha1->text().isEmpty() ? "-" : ui->alpha1->text().toStdString()) << ",";
+                center_ofd_ << (ui->alpha2->text().isEmpty() ? "-" : ui->alpha2->text().toStdString()) << ",";
+                center_ofd_ << (ui->maxValue->text().isEmpty() ? "-" : ui->maxValue->text().toStdString()) << ",";
+                center_ofd_ << (ui->diameter->text().isEmpty() ? "-" : ui->diameter->text().toStdString()) << std::endl;
 
-                status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()) + " " + QString::number(span));
+                status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()));
                 imshow(img_);
                 ++count_;
-                t0_ = std::chrono::high_resolution_clock::now();
-                span = std::chrono::duration_cast<std::chrono::milliseconds>
-                                    (t0_ - t1_).count();
-                ui->lineEdit_4->setText(QString::number(span));
+//                t0_ = std::chrono::high_resolution_clock::now();
+//                span = std::chrono::duration_cast<std::chrono::milliseconds>
+//                                    (t0_ - t1_).count();
+//                ui->lineEdit_4->setText(QString::number(span));
                 // std::cout << "add " << count_;
                 // ui->textBrowser->append("add " + QString::number(count_-1));
             } else if (START_CHAR == *off) {
@@ -256,7 +267,7 @@ void MainWindow::parse() {
                 state_data_ = C_S;
                 buf_btm_ = off;
 
-                t0_ = std::chrono::high_resolution_clock::now();
+                // t0_ = std::chrono::high_resolution_clock::now();
             } else {
                 ++off;
             }
@@ -284,9 +295,12 @@ void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format fo
     //return;
     cv::Mat img = _img.t();
     cv::flip(img, img, 0);
+
     if (auto_resize)
         cv::resize(img, img, cv::Size(ui->imshow->width(), ui->imshow->height()));
     // cv::cvtColor(img, img, CV_BGR2RGB);
+
+    cv::putText(img, "0", cv::Point(20, img.rows - 20), cv::HersheyFonts::FONT_HERSHEY_SCRIPT_COMPLEX, 1, cv::Scalar(255, 255, 255), 1);
     QImage showImage((const uchar*)img.data, img.cols, img.rows, img.cols*img.channels(), format);
     ui->imshow->setPixmap(QPixmap::fromImage(showImage));
 }
@@ -447,6 +461,7 @@ void MainWindow::csrClosed() {
 
     data_->clear();
 
+    if (center_ofd_.is_open()) center_ofd_.close();
 //    thread_alive_ = false;
 //    parse_thread_.waitForFinished();
 }
@@ -460,6 +475,9 @@ void MainWindow::csrConnected() {
     ui->actionConfigure->setEnabled(false);
 
     data_->clear();
+
+    std::string _path = settings->settings().data_path.toStdString();
+    center_ofd_.open(_path + "/center.csv");
 
 //    thread_alive_ = true;
 //    parse_thread_ = QtConcurrent::run(this, &MainWindow::parse);
