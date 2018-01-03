@@ -255,6 +255,7 @@ void MainWindow::parse() {
                 status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()));
                 imshow(img_, c[0], c[1]);
                 ++count_;
+                data_->clear();
 //                t0_ = std::chrono::high_resolution_clock::now();
 //                span = std::chrono::duration_cast<std::chrono::milliseconds>
 //                                    (t0_ - t1_).count();
@@ -300,7 +301,7 @@ void MainWindow::imshow(const cv::Mat& _img, size_t c_x, size_t c_y, bool auto_r
         cv::resize(img, img, cv::Size(ui->imshow->width(), ui->imshow->height()));
     // cv::cvtColor(img, img, CV_BGR2RGB);
 
-    cv::putText(img, "0", cv::Point(20, img.rows - 20), cv::HersheyFonts::FONT_HERSHEY_SCRIPT_COMPLEX, 1, cv::Scalar(255, 255, 255), 1);
+    cv::putText(img, "0", cv::Point(20, img.rows - 20), 7, 1, cv::Scalar(255, 255, 255), 1);
     QImage showImage((const uchar*)img.data, img.cols, img.rows, img.cols*img.channels(), format);
     ui->imshow->setPixmap(QPixmap::fromImage(showImage));
 }
