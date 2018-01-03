@@ -22,13 +22,13 @@ public:
 
     void clear();
 
-    void print(size_t t = 1000);
+    void print();
     void saveCenter();
     void saveCSV(bool save_center = true);
     void save(bool save_center = true);
     void saveOnceCSV();
     void saveOnce();
-    void saveAll();
+    // void saveAll();
     bool loadCSV(const std::string& file);
     bool load(size_t _t, Eigen::MatrixXd&);
 
@@ -37,7 +37,7 @@ public:
     bool getCenter(size_t& _x, size_t& _y, double thres = 5);
     bool whole_calc(cv::Mat&, size_t&, size_t&, double max = -1, double thres = 5, size_t a = 6);
     // for Debug
-    Eigen::MatrixXd& data_ref(size_t t) {return data_[t];}
+    Eigen::MatrixXd& data_ref() {return data_;}
 
 // private:
     void update(size_t _t, size_t _r, size_t _c, double _v);
@@ -49,15 +49,13 @@ public:
     const size_t    COLS;
 
 private:
-    std::vector<Eigen::MatrixXd> data_;
+    Eigen::MatrixXd data_;
+    int             s_times_;
+
     Eigen::VectorXd center_tmp_vecs_;
 
     std::vector<size_t> r_tmp_vec;
     std::vector<size_t> c_tmp_vec;
-
-    size_t          s_times_;
-    size_t          n_times_;
-    size_t          N_times_;
 
     double          min_val_;
     double          max_val_;

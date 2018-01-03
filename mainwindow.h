@@ -39,7 +39,7 @@ private:
     void initActionsConnections();
 
     void showData(size_t);
-    void imshow(const cv::Mat&, bool auto_resize = true, QImage::Format = QImage::Format_Grayscale8);
+    void imshow(const cv::Mat&, size_t c_x, size_t c_y, bool auto_resize = true, QImage::Format = QImage::Format_Grayscale8);
     void __parse_value(char* _raw);
 
 signals:

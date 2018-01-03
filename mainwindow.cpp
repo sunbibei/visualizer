@@ -217,8 +217,8 @@ void MainWindow::parse() {
 
                 bool is_ok = data_->whole_calc(img_, c[0], c[1], max, thres, exp_);
                 if (SINGLE == recv_state_) {
-                    data_->clear();
-                    count_ = 0;
+                    // data_->clear();
+                    // count_ = 0;
                     // data_->getCenter(c[0], c[1]);
                     if (is_ok) {
                         vals_view_ = "Center: (" + QString::number(c[0]) + ", " + QString::number(c[1]) + ")";
@@ -253,7 +253,7 @@ void MainWindow::parse() {
                 center_ofd_ << (ui->diameter->text().isEmpty() ? "-" : ui->diameter->text().toStdString()) << std::endl;
 
                 status->setText(vals_view_ + " | " + QString::fromStdString(data_->getCurrentFileName()));
-                imshow(img_);
+                imshow(img_, c[0], c[1]);
                 ++count_;
 //                t0_ = std::chrono::high_resolution_clock::now();
 //                span = std::chrono::duration_cast<std::chrono::milliseconds>
@@ -287,10 +287,10 @@ void MainWindow::parse() {
 }
 
 void MainWindow::showData(size_t) {
-    imshow(data_->cvtCvMat());
+    // imshow(data_->cvtCvMat());
 }
 
-void MainWindow::imshow(const cv::Mat& _img, bool auto_resize, QImage::Format format) {
+void MainWindow::imshow(const cv::Mat& _img, size_t c_x, size_t c_y, bool auto_resize, QImage::Format format) {
     //cv::imshow("test", _img);
     //return;
     cv::Mat img = _img.t();

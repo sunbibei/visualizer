@@ -18,19 +18,13 @@ inline void __set_value(cv::Mat& _mat, const cv::Range& _rr, const cv::Range& _c
 }
 
 AdtEigen::AdtEigen(size_t r, size_t c, double min, double max)
-    : ROWS(r), COLS(c), s_times_(0),
-      N_times_(__INIT_TIMES), p_xmlfd_(nullptr),
+    : ROWS(r), COLS(c), p_xmlfd_(nullptr),
       max_val_(max), min_val_(min)
 {
-    data_.resize(N_times_);
-    for (auto& mat : data_) {
-        mat.resize(ROWS, COLS);
-        mat.fill(0.0);
-    }
+    data_.resize(ROWS, COLS);
     center_tmp_vecs_.resize(ROWS*COLS);
 
-    n_times_    = 0;
-    last_times_ = N_times_;
+    s_times_ = 0;
 }
 
 AdtEigen::~AdtEigen() {
@@ -43,15 +37,13 @@ AdtEigen::~AdtEigen() {
 }
 
 void AdtEigen::clear() {
-    for (auto& mat : data_)
-        mat.fill(0.0);
+    data_.fill(0.0);
 
-    n_times_ = 0;
-    last_times_ = N_times_;
+    s_times_ = 0;
 }
 
 bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, double thres, size_t a) {
-    const auto& _s = data_[n_times_];
+    const auto& _s = data_;
     // img.resize(a*ROWS, b*4*COLS);
     if (max <= 0) max = max_val_;
 
@@ -71,7 +63,7 @@ bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, doub
 
     // plot coordinate system
     cv::line(img, cv::Point(a, a), cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
-    cv::line(img, cv::Point(img.cols-3*a, 0), cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
+    cv::line(img, cv::Point(img.cols-3*a, 0),   cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
     cv::line(img, cv::Point(img.cols-3*a, 2*a), cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
 
     cv::line(img, cv::Point(a, a), cv::Point(a, img.rows - a), CV_RGB(255, 255, 255));
@@ -92,7 +84,7 @@ bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, doub
 }
 
 bool AdtEigen::getCenter(size_t& _x, size_t& _y, double thres) {
-    const auto& curr = data_[n_times_];
+    const auto& curr = data_;
 
 //    Eigen::Matrix3d guass;
 //    guass << 0.0947416, 0.118318, 0.0947416,
@@ -170,28 +162,11 @@ bool AdtEigen::getCenter(size_t& _x, size_t& _y, double thres) {
 }
 
 void AdtEigen::update(size_t _t, size_t _r, size_t _c, double _v) {
-    if (N_times_ == last_times_) last_times_ = _t;
-    // if (_t >= N_times_) return;
-    if (last_times_ != _t) {
-        ++n_times_;
-        if (n_times_ == N_times_) {
-            // saveAll();
-            ++s_times_;
-            n_times_ = 0;
-        }
-
-        last_times_ = _t;
-        data_[n_times_].fill(0.0);
-    }
-
-    auto& curr = data_[n_times_];
-    curr(_r%ROWS, _c%COLS) = _v;
-    if (0 == _v) _v = 0.00001;
-    center_tmp_vecs_(_r*COLS + _c) = _v * log(_v);
+    data_(_r%ROWS, _c%COLS) = _v;
 }
 
 cv::Mat AdtEigen::cvtCvMat(size_t a, size_t b, size_t r) {
-    const auto& _s = data_[n_times_];
+    const auto& _s = data_;
     // qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
     // auto _s = Eigen::MatrixXd(ROWS, COLS);
 //    for (int r = 0; r < ROWS; ++r) {
@@ -220,7 +195,7 @@ cv::Mat AdtEigen::cvtCvMat(size_t a, size_t b, size_t r) {
 
 
 cv::Mat AdtEigen::cvtCvMat(size_t _t, size_t a, size_t b, size_t r) {
-    const auto& _s = data_[_t%N_times_];
+    const auto& _s = data_;
     cv::Mat img = cv::Mat::zeros(b*COLS, a*ROWS, CV_8UC1);
 
     double scale = 1/(max_val_ - min_val_);
@@ -239,9 +214,8 @@ cv::Mat AdtEigen::cvtCvMat(size_t _t, size_t a, size_t b, size_t r) {
     return img;
 }
 
-void AdtEigen::print(size_t t) {
-    if (t == 1000) t = n_times_;
-    const auto& _m = data_[t%N_times_];
+void AdtEigen::print() {
+    const auto& _m = data_;
     std::cout << _m << std::endl;
 }
 
@@ -296,10 +270,10 @@ void AdtEigen::saveOnceCSV() {
     memset(tmp, 0x00, BUF_SIZE*sizeof(char));
 
     tmp_ofd << "timestamp, " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString()
-            << ",times, " << s_times_*N_times_ + n_times_
+            << ",times, " << s_times_
               << ",rows, " << ROWS << ",cols, " << COLS << std::endl;
 
-    const auto& _m = data_[n_times_];
+    const auto& _m = data_;
     for (int r = 0; r < _m.rows(); ++r) {
         for (int c = 0; c < _m.cols(); ++c)
             sprintf(tmp + c*VALUE_SIZE, "%01.05f,", _m(r, c));
@@ -328,11 +302,11 @@ void AdtEigen::saveOnce() {
 
     TiXmlElement* _new = new TiXmlElement("record");
     _new->SetAttribute("timestamp", QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString());
-    _new->SetAttribute("times",     s_times_*N_times_ + n_times_);
+    _new->SetAttribute("times",     s_times_);
     _new->SetAttribute("rows",      ROWS);
     _new->SetAttribute("cols",      COLS);
 
-    const auto& _m = data_[n_times_];
+    const auto& _m = data_;
     for (int r = 0; r < _m.rows(); ++r) {
         sprintf(tmp, "R%02d", r);
         TiXmlElement* _row = new TiXmlElement(tmp);
@@ -355,7 +329,7 @@ bool AdtEigen::loadCSV(const std::string& file) {
     if (!ifd.is_open()) return false;
 
     double tmp = 0;
-    auto& _m = data_[n_times_];
+    auto& _m = data_;
     for (int r = 0; r < _m.rows(); ++r) {
         for (int c = 0; c < _m.cols(); ++c) {
             ifd >> tmp;
@@ -409,10 +383,10 @@ void AdtEigen::saveCSV(bool save_center) {
 //        getCenter(x, y);
 //        center_ofd_ << time << "," << x << "," << y << std::endl;
 //    }
-    data_csv_ << "timestamp, " << time << ",times, " << s_times_*N_times_ + n_times_
+    data_csv_ << "timestamp, " << time << ",times, " << s_times_++
               << ",rows, " << ROWS << ",cols, " << COLS << std::endl;
 
-    const auto& _m = data_[n_times_];
+    const auto& _m = data_;
     for (int r = 0; r < _m.rows(); ++r) {
         for (int c = 0; c < _m.cols(); ++c)
             sprintf(tmp + c*VALUE_SIZE, "%01.05f,", _m(r, c));
@@ -459,11 +433,11 @@ void AdtEigen::save(bool save_center) {
 //    }
 
     _new->SetAttribute("timestamp", time);
-    _new->SetAttribute("times",     s_times_*N_times_ + n_times_);
+    _new->SetAttribute("times",     s_times_++);
     _new->SetAttribute("rows",      ROWS);
     _new->SetAttribute("cols",      COLS);
 
-    const auto& _m = data_[n_times_];
+    const auto& _m = data_;
     for (int r = 0; r < _m.rows(); ++r) {
         sprintf(tmp, "R%02d", r);
         TiXmlElement* _row = new TiXmlElement(tmp);
@@ -488,48 +462,48 @@ void AdtEigen::saveCenter() {
 //    }
 }
 
-void AdtEigen::saveAll() {
-    QTime curr = QTime::currentTime();
-    if (last_hour_ < curr.hour()) {
-        if (p_xmlfd_) delete p_xmlfd_;
-        p_xmlfd_ = nullptr;
-        last_hour_= curr.hour();
-    }
+//void AdtEigen::saveAll() {
+//    QTime curr = QTime::currentTime();
+//    if (last_hour_ < curr.hour()) {
+//        if (p_xmlfd_) delete p_xmlfd_;
+//        p_xmlfd_ = nullptr;
+//        last_hour_= curr.hour();
+//    }
 
-    if (nullptr == p_xmlfd_) {
-        p_xmlfd_ = new TiXmlDocument;
-        QDateTime curr_date =QDateTime::currentDateTime();
-        curr_file_name_ = out_path_ + curr_date.toString("_yyyy_MM_dd_hh_mm").toStdString();
-        if (!p_xmlfd_->LoadFile(curr_file_name_)) {
-            p_xmlfd_->LinkEndChild(new TiXmlDeclaration("1.0", "UTF-8", "yes"));
-            p_xmlfd_->LinkEndChild(new TiXmlElement("history"));
-        }
-    }
+//    if (nullptr == p_xmlfd_) {
+//        p_xmlfd_ = new TiXmlDocument;
+//        QDateTime curr_date =QDateTime::currentDateTime();
+//        curr_file_name_ = out_path_ + curr_date.toString("_yyyy_MM_dd_hh_mm").toStdString();
+//        if (!p_xmlfd_->LoadFile(curr_file_name_)) {
+//            p_xmlfd_->LinkEndChild(new TiXmlDeclaration("1.0", "UTF-8", "yes"));
+//            p_xmlfd_->LinkEndChild(new TiXmlElement("history"));
+//        }
+//    }
 
-    const size_t BUF_SIZE   = 1024;
-    const size_t VALUE_SIZE = 8;
-    char* tmp = new char[BUF_SIZE];
-    memset(tmp, 0x00, BUF_SIZE*sizeof(char));
-    for (size_t i = 0; i < N_times_; ++i) {
-        TiXmlElement* _new = new TiXmlElement("record");
-        _new->SetAttribute("timestamp", QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString());
-        _new->SetAttribute("times",     s_times_*N_times_ + i);
-        _new->SetAttribute("rows",      ROWS);
-        _new->SetAttribute("cols",      COLS);
+//    const size_t BUF_SIZE   = 1024;
+//    const size_t VALUE_SIZE = 8;
+//    char* tmp = new char[BUF_SIZE];
+//    memset(tmp, 0x00, BUF_SIZE*sizeof(char));
+//    for (size_t i = 0; i < N_times_; ++i) {
+//        TiXmlElement* _new = new TiXmlElement("record");
+//        _new->SetAttribute("timestamp", QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString());
+//        _new->SetAttribute("times",     s_times_*N_times_ + i);
+//        _new->SetAttribute("rows",      ROWS);
+//        _new->SetAttribute("cols",      COLS);
 
-        const auto& _m = data_[i];
-        for (int r = 0; r < _m.rows(); ++r) {
-            sprintf(tmp, "R%02d", r);
-            TiXmlElement* _row = new TiXmlElement(tmp);
-            for (int c = 0; c < _m.cols(); ++c)
-                sprintf(tmp + c*VALUE_SIZE, "%01.05f ", _m(r, c));
-            _row->LinkEndChild(new TiXmlText(tmp));
-            _new->LinkEndChild(_row);
-        }
-        p_xmlfd_->RootElement()->LinkEndChild(_new);
-    }
+//        const auto& _m = data_[i];
+//        for (int r = 0; r < _m.rows(); ++r) {
+//            sprintf(tmp, "R%02d", r);
+//            TiXmlElement* _row = new TiXmlElement(tmp);
+//            for (int c = 0; c < _m.cols(); ++c)
+//                sprintf(tmp + c*VALUE_SIZE, "%01.05f ", _m(r, c));
+//            _row->LinkEndChild(new TiXmlText(tmp));
+//            _new->LinkEndChild(_row);
+//        }
+//        p_xmlfd_->RootElement()->LinkEndChild(_new);
+//    }
 
-    p_xmlfd_->SaveFile(curr_file_name_);
-    delete[] tmp;
-}
+//    p_xmlfd_->SaveFile(curr_file_name_);
+//    delete[] tmp;
+//}
 
