@@ -105,13 +105,14 @@ void SettingsDialog::saveSettings() {
     }
 
     TiXmlElement* root = config_doc_->RootElement();
-    root->SetAttribute("format", (settings_.is_xml ? "xml" : "csv"));
-    root->SetAttribute("ip",     settings_.ip.toStdString());
-    root->SetAttribute("port",   settings_.port);
-    root->SetAttribute("width",  settings_.width);
-    root->SetAttribute("height", settings_.height);
-    root->SetAttribute("min_val",  settings_.min_val);
-    root->SetAttribute("max_val",  settings_.max_val);
+    root->SetAttribute("format",   (settings_.is_xml ? "xml" : "csv"));
+    root->SetAttribute("ip",        settings_.ip.toStdString());
+    root->SetAttribute("port",      settings_.port);
+    root->SetAttribute("width",     settings_.width);
+    root->SetAttribute("height",    settings_.height);
+    root->SetAttribute("min_val",   settings_.min_val);
+    root->SetAttribute("max_val",   settings_.max_val);
+    root->SetAttribute("threshold", settings_.threshold);
     root->SetAttribute("data_path", settings_.data_path.toStdString());
     root->SetAttribute("cfg_path",  settings_.cfg_path.toStdString());
 
@@ -144,16 +145,18 @@ void SettingsDialog::loadSettings() {
     root->Attribute("height",   (int*)(&settings_.height));
     root->Attribute("min_val",  (double*)(&settings_.min_val));
     root->Attribute("max_val",  (double*)(&settings_.max_val));
+    root->Attribute("threshold",(double*)(&settings_.threshold));
 }
 
 void SettingsDialog::initSettings() {
-    settings_.ip      = "10.10.100.254";
-    settings_.port    = 8899;
-    settings_.width   = 16;
-    settings_.height  = 88;
-    settings_.min_val = 0;
-    settings_.max_val = 4;
-    settings_.is_xml  = false;
+    settings_.ip        = "10.10.100.254";
+    settings_.port      = 8899;
+    settings_.width     = 16;
+    settings_.height    = 88;
+    settings_.min_val   = 0;
+    settings_.max_val   = 4;
+    settings_.threshold = 0.5;
+    settings_.is_xml    = false;
     settings_.data_path = QDir::currentPath();
 
     ofd.open("cfg", std::ios::in | std::ios::out);
@@ -198,6 +201,7 @@ void SettingsDialog::updateSettings(bool update)
         settings_.cfg_path  = ui->cfgpath->text();
         settings_.min_val   = ui->minTxt->text().toDouble();
         settings_.max_val   = ui->maxTxt->text().toDouble();
+        settings_.threshold = ui->threshold->text().toDouble();
         settings_.is_xml    = (ui->formatBox->currentIndex() == 0);
     } else {
         ui->ipText->setText(settings_.ip);
@@ -208,6 +212,7 @@ void SettingsDialog::updateSettings(bool update)
         ui->cfgpath->setText(settings_.cfg_path);
         ui->minTxt->setText(QString::number(settings_.min_val));
         ui->maxTxt->setText(QString::number(settings_.max_val));
+        ui->threshold->setText(QString::number(settings_.threshold));
         ui->formatBox->setCurrentIndex((settings_.is_xml ? 0 : 1));
     }
 }

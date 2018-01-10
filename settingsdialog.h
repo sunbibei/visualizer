@@ -81,6 +81,7 @@ public:
         size_t height;
         double min_val;
         double max_val;
+        double threshold;
 
         QString data_path;
         QString cfg_path;

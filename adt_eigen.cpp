@@ -42,7 +42,7 @@ void AdtEigen::clear() {
     s_times_ = 0;
 }
 
-bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, double thres, size_t a) {
+bool AdtEigen::whole_calc(cv::Mat& img, double& _r, double& _c, double max, double thres, size_t a) {
     const auto& _s = data_;
     // img.resize(a*ROWS, b*4*COLS);
     if (max <= 0) max = max_val_;
@@ -83,7 +83,7 @@ bool AdtEigen::whole_calc(cv::Mat& img, size_t& _r, size_t& _c, double max, doub
     return true;
 }
 
-bool AdtEigen::getCenter(size_t& _x, size_t& _y, double thres) {
+bool AdtEigen::getCenter(double& _x, double& _y, double thres) {
     const auto& curr = data_;
 
 //    Eigen::Matrix3d guass;

@@ -96,6 +96,16 @@
         <item>
          <widget class="QLineEdit" name="maxTxt"/>
         </item>
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Threshold:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="threshold"/>
+        </item>
        </layout>
       </item>
       <item row="7" column="0">

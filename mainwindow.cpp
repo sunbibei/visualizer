@@ -200,14 +200,17 @@ void MainWindow::parse() {
 
                 // showData(count_);
                 // vals_view_ = "";
-                size_t c[2] = {0};
+                double c[2] = {0};
                 bool is_cvt = false;
                 double max   = -1;
                 double thres = 5;
                 if (!ui->maxValue->text().isEmpty()) {
                     max = ui->maxValue->text().toDouble(&is_cvt);
-                    if (!is_cvt) ui->maxValue->setText("ERROR VALUE");
-                    else max = -1;
+                    if (!is_cvt) {
+                        ui->maxValue->setText("ERROR VALUE");
+                        max = -1;
+                    }
+                    // else max = -1;
                 }
 //                if (!ui->threshold->text().isEmpty()) {
 //                    thres = ui->threshold->text().toDouble(&is_cvt);
@@ -215,7 +218,7 @@ void MainWindow::parse() {
 //                    else thres = -1;
 //                }
 
-                bool is_ok = data_->whole_calc(img_, c[0], c[1], max, thres, exp_);
+                bool is_ok = data_->whole_calc(img_, c[0], c[1], max, settings->settings().threshold, exp_);
                 if (SINGLE == recv_state_) {
                     // data_->clear();
                     // count_ = 0;
@@ -584,8 +587,8 @@ void MainWindow::plotData(const QVector<double>& _keys, const QVector<QVector<do
     }
 }
 
-void MainWindow::plotCenter(size_t* pc) {
-    size_t c[2] = {0};
+void MainWindow::plotCenter(double* pc) {
+    double c[2] = {0};
     if (nullptr != pc) {
         c[0] = pc[0];
         c[1] = pc[1];

@@ -47,7 +47,7 @@ signals:
 
 private slots:
     void readyread();
-    void plotCenter(size_t *pc = nullptr);
+    void plotCenter(double *pc = nullptr);
 
     void parse();
 

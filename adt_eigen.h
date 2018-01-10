@@ -34,8 +34,8 @@ public:
 
     const std::string& getCurrentFileName() {return only_file_name_;}
 
-    bool getCenter(size_t& _x, size_t& _y, double thres = 5);
-    bool whole_calc(cv::Mat&, size_t&, size_t&, double max = -1, double thres = 5, size_t a = 6);
+    bool getCenter(double &_x, double &_y, double thres = 5);
+    bool whole_calc(cv::Mat&, double&, double&, double max = -1, double thres = 5, size_t a = 6);
     // for Debug
     Eigen::MatrixXd& data_ref() {return data_;}
 
