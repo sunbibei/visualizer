@@ -332,13 +332,23 @@ void MainWindow::connect_csr()
 //    auto cfg = settings->settings();
 //    data_  = new AdtEigen(cfg.height, cfg.width, cfg.min_val, cfg.max_val);
 //    data_->setFile(cfg.data_path.toStdString());
-//    img_ = cv::Mat::zeros(3*data_->ROWS, 12*data_->COLS, CV_8UC1);
-//    data_->loadCSV("data.csv");
-//    // data_->print();
+//    bool is_cvt = false;
+//    double max   = -1;
+//    if (!ui->maxValue->text().isEmpty()) {
+//        max = ui->maxValue->text().toDouble(&is_cvt);
+//        if (!is_cvt) {
+//            ui->maxValue->setText("ERROR VALUE");
+//            max = -1;
+//        }
+//        // else max = -1;
+//    }
+//    img_ = cv::Mat::zeros(exp_*2*data_->ROWS/2, exp_*2*2*data_->COLS, CV_8UC1);
+//    data_->loadCSV("/Users/bibei/Downloads/data.csv");
+//    data_->print();
 
-//    size_t x, y;
-//    data_->whole_calc(img_, x, y);
-//    imshow(img_);
+//    double x, y;
+//    data_->whole_calc(img_, x, y, max, settings->settings().threshold, exp_);
+//    imshow(img_, x, y);
 //    ui->statusBar->showMessage(QString("Center: (") + QString::number(x) + ", " + QString::number(y) + ")");
 //    return;
 

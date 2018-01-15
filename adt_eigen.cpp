@@ -42,6 +42,10 @@ void AdtEigen::clear() {
     s_times_ = 0;
 }
 
+inline unsigned char __min(unsigned char a, unsigned char b) {
+    return (a < b) ? a : b;
+}
+
 bool AdtEigen::whole_calc(cv::Mat& img, double& _r, double& _c, double max, double thres, size_t a) {
     const auto& _s = data_;
     // img.resize(a*ROWS, b*4*COLS);
@@ -49,14 +53,16 @@ bool AdtEigen::whole_calc(cv::Mat& img, double& _r, double& _c, double max, doub
 
     double scale = (max == min_val_) ? 0 : 255.0/(max - min_val_);
     // double scale = 0.111;
-    // img = cv::Mat::zeros(b*4*COLS, a*ROWS, CV_8UC1);
+    // img_ = cv::Mat::zeros(exp_*2*data_->ROWS/2, exp_*2*2*data_->COLS, CV_8UC1);
     // return img; 16 * 88
     for (int r = 0; r < ROWS; r += 2) {
         for (int i = 0; i < 2; ++i) {
             auto data_r = _s.row(r+i);
             for (int c = 0; c < COLS; ++c) {
-                __set_value(img, cv::Range(a*r/2, 2*a+r/2*a),
-                            cv::Range(2*a*(i*COLS+c), 2*a*(i*COLS+c) + 2*a), data_r(c)*scale);
+                double _val = (data_r(c)-min_val_)*scale;
+                if (255 <= _val) _val = 255;
+                __set_value(img, cv::Range(a*r, 2*a+r*a),
+                            cv::Range(2*a*(i*COLS+c), 2*a*(i*COLS+c) + 2*a), _val);
             }
         }
     }
