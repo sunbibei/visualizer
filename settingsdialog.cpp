@@ -155,7 +155,7 @@ void SettingsDialog::initSettings() {
     settings_.height    = 88;
     settings_.min_val   = 0;
     settings_.max_val   = 4;
-    settings_.threshold = 0.5;
+    settings_.threshold = 3;
     settings_.is_xml    = false;
     settings_.data_path = QDir::currentPath();
 

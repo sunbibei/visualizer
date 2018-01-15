@@ -244,8 +244,8 @@ void MainWindow::parse() {
                     ui->center_y->setText(QString::number(c[1]));
                     center_ofd_ << time << "," << c[0] << "," << c[1] << ",";
                 } else  {
-                    ui->center_x->setText("");
-                    ui->center_y->setText("");
+                    ui->center_x->setText("-");
+                    ui->center_y->setText("-");
                     center_ofd_ << time << ",-,-,";
                 }
                 center_ofd_ << (ui->model->text().isEmpty() ? "-" : ui->model->text().toStdString()) << ",";
@@ -566,13 +566,13 @@ void MainWindow::initPlot() {
     }
 
     QPen pen;
-    pen.setStyle(Qt::SolidLine);
+    pen.setStyle(Qt::DotLine);
     pen.setWidth(2);
     pen.setColor(Qt::red);
     graphs[G_X]->setPen(pen);
     graphs[G_X]->setName("x");
 
-    pen.setStyle(Qt::SolidLine);
+    pen.setStyle(Qt::DotLine);
     pen.setWidth(2);
     pen.setColor(Qt::blue);
     graphs[G_Y]->setPen(pen);

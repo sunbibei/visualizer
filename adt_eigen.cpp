@@ -55,7 +55,7 @@ bool AdtEigen::whole_calc(cv::Mat& img, double& _r, double& _c, double max, doub
         for (int i = 0; i < 2; ++i) {
             auto data_r = _s.row(r+i);
             for (int c = 0; c < COLS; ++c) {
-                __set_value(img, cv::Range(a*r, 2*a+r*a),
+                __set_value(img, cv::Range(a*r/2, 2*a+r/2*a),
                             cv::Range(2*a*(i*COLS+c), 2*a*(i*COLS+c) + 2*a), data_r(c)*scale);
             }
         }
