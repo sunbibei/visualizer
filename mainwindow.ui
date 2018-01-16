@@ -22,7 +22,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>481</width>
+         <width>601</width>
          <height>331</height>
         </rect>
        </property>
@@ -48,19 +48,6 @@
          <width>811</width>
          <height>91</height>
         </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="val_view">
-       <property name="geometry">
-        <rect>
-         <x>490</x>
-         <y>10</y>
-         <width>111</width>
-         <height>321</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
        </property>
       </widget>
       <widget class="QGroupBox" name="groupBox">
@@ -284,7 +271,7 @@
      <x>0</x>
      <y>0</y>
      <width>840</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">

@@ -51,19 +51,19 @@ QT += network
 win32 || win64 {
 
 #MSVC {
- INCLUDEPATH += D:/opencv/build/include \
-    D:/opencv/build/include/opencv \
-    D:/opencv/build/include/opencv2 \
-    D:/Eigen3.3.4
+# INCLUDEPATH += D:/opencv/build/include \
+#    D:/opencv/build/include/opencv \
+#    D:/opencv/build/include/opencv2 \
+#    D:/Eigen3.3.4
 
-LIBS += -LD:/opencv/build/x64/vc12/lib \
-    -lopencv_core2410 \
-    -lopencv_highgui2410 \
-    -lopencv_imgproc2410 \
-    -lopencv_video2410
+#LIBS += -LD:/opencv/build/x64/vc12/lib \
+#    -lopencv_core2410 \
+#    -lopencv_highgui2410 \
+#    -lopencv_imgproc2410 \
+#    -lopencv_video2410
 #}
 
-MINGW {
+#MINGW {
  INCLUDEPATH += D:/opencv/build/include \
     D:/opencv/build/include/opencv \
     D:/opencv/build/include/opencv2 \
@@ -78,7 +78,7 @@ LIBS += -LD:/opencv_mingw/lib \
     -lopencv_highgui2410 \
     -lopencv_imgproc2410 \
     -lopencv_video2410
-}
+#}
 #LIBS += -LD:/OpenCV/build/lib \
 #-lopencv_core249 \
 #-lopencv_highgui249 \

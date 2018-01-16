@@ -42,10 +42,6 @@ void AdtEigen::clear() {
     s_times_ = 0;
 }
 
-inline unsigned char __min(unsigned char a, unsigned char b) {
-    return (a < b) ? a : b;
-}
-
 bool AdtEigen::whole_calc(cv::Mat& img, double& _r, double& _c, double max, double thres, size_t a) {
     const auto& _s = data_;
     // img.resize(a*ROWS, b*4*COLS);
@@ -60,12 +56,13 @@ bool AdtEigen::whole_calc(cv::Mat& img, double& _r, double& _c, double max, doub
             auto data_r = _s.row(r+i);
             for (int c = 0; c < COLS; ++c) {
                 double _val = (data_r(c)-min_val_)*scale;
-                if (255 <= _val) _val = 255;
+                if (_val > 255) _val = 255;
                 __set_value(img, cv::Range(a*r, 2*a+r*a),
                             cv::Range(2*a*(i*COLS+c), 2*a*(i*COLS+c) + 2*a), _val);
             }
         }
     }
+    // std::cout << data_.row(1).tail(6) << std::endl;
 
     // plot coordinate system
     cv::line(img, cv::Point(a, a), cv::Point(img.cols - a, a), CV_RGB(255, 255, 255));
